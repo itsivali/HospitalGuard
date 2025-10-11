@@ -6,7 +6,6 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-.claude
 
 node_modules
 dist
@@ -23,4 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-.claude/settings.local.json
+
+# Claude AI files and folders
+.claude/
+.claude/**
+CLAUDE.md
+claude.md
