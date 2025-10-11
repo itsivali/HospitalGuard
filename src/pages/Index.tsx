@@ -2,23 +2,18 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Shield,
-  Activity,
-  Lock,
-  FileCheck,
-  Users,
-  AlertCircle,
-  Sparkles,
-  ArrowRight,
-  CheckCircle2,
-  Zap,
-  Smartphone,
-  QrCode,
-  BarChart3,
-  ShieldCheck,
-  Globe,
-  Database
-} from "lucide-react";
+  MdSecurity as Shield,
+  MdFilePresent as FileCheck,
+  MdLock as Lock,
+  MdWarning as AlertCircle,
+  MdShowChart as Activity,
+  MdSmartphone as Smartphone,
+  MdCheckCircle as CheckCircle2,
+  MdArrowForward as ArrowRight,
+  MdFlashOn as Zap,
+  MdStars as Sparkles,
+  MdPeople as Users
+} from "react-icons/md";
 
 const Index = () => {
   const navigate = useNavigate();

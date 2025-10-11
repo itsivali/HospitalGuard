@@ -7,7 +7,15 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Shield, Lock, Mail, User, Phone, Sparkles, CheckCircle2 } from "lucide-react";
+import {
+  MdSecurity as Shield,
+  MdLock as Lock,
+  MdEmail as Mail,
+  MdPerson as User,
+  MdPhone as Phone,
+  MdStars as Sparkles,
+  MdCheckCircle as CheckCircle2
+} from "react-icons/md";
 
 const Auth = () => {
   const navigate = useNavigate();

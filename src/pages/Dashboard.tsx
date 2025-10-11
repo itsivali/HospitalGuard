@@ -5,19 +5,19 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Shield,
-  LogOut,
-  Activity,
-  FileText,
-  Users,
-  AlertCircle,
-  Pill,
-  TrendingUp,
-  Clock,
-  CheckCircle2,
-  ArrowRight,
-  Sparkles
-} from "lucide-react";
+  MdSecurity as Shield,
+  MdLogout as LogOut,
+  MdShowChart as Activity,
+  MdDescription as FileText,
+  MdPeople as Users,
+  MdWarning as AlertCircle,
+  MdMedication as Pill,
+  MdTrendingUp as TrendingUp,
+  MdAccessTime as Clock,
+  MdCheckCircle as CheckCircle2,
+  MdArrowForward as ArrowRight,
+  MdStars as Sparkles
+} from "react-icons/md";
 import type { User } from "@supabase/supabase-js";
 
 interface UserRole {
