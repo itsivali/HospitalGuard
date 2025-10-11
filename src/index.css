@@ -1,0 +1,140 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Nude/Beige Base - Warm, calming, medical-grade */
+    --background: 30 25% 96%;
+    --foreground: 25 20% 20%;
+
+    --card: 30 30% 98%;
+    --card-foreground: 25 20% 20%;
+
+    --popover: 30 30% 98%;
+    --popover-foreground: 25 20% 20%;
+
+    /* Terracotta/Rose - Professional & Warm */
+    --primary: 15 65% 62%;
+    --primary-foreground: 30 30% 98%;
+
+    /* Sage Green - Health & Wellness */
+    --secondary: 145 25% 55%;
+    --secondary-foreground: 30 30% 98%;
+
+    --muted: 30 20% 92%;
+    --muted-foreground: 25 15% 45%;
+
+    --accent: 15 40% 90%;
+    --accent-foreground: 15 65% 50%;
+
+    /* Alert Red for Critical Actions */
+    --destructive: 0 70% 55%;
+    --destructive-foreground: 30 30% 98%;
+
+    --border: 30 15% 88%;
+    --input: 30 20% 92%;
+    --ring: 15 65% 62%;
+
+    --radius: 0.875rem;
+
+    /* Premium design tokens for hospital-grade UI */
+    --gradient-primary: linear-gradient(135deg, hsl(15 65% 62%), hsl(15 65% 70%));
+    --gradient-success: linear-gradient(135deg, hsl(145 25% 55%), hsl(145 25% 65%));
+    --shadow-card: 0 2px 12px -3px hsl(25 20% 20% / 0.08);
+    --shadow-elevated: 0 8px 32px -4px hsl(25 20% 20% / 0.12);
+    --shadow-soft: 0 1px 3px 0 hsl(25 20% 20% / 0.06);
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    --sidebar-background: 30 30% 94%;
+    --sidebar-foreground: 25 20% 20%;
+    --sidebar-primary: 15 65% 62%;
+    --sidebar-primary-foreground: 30 30% 98%;
+    --sidebar-accent: 30 25% 90%;
+    --sidebar-accent-foreground: 25 20% 20%;
+    --sidebar-border: 30 15% 88%;
+    --sidebar-ring: 15 65% 62%;
+  }
+
+  .dark {
+    /* Dark mode with sophisticated warm tones */
+    --background: 25 18% 14%;
+    --foreground: 30 25% 92%;
+
+    --card: 25 20% 18%;
+    --card-foreground: 30 25% 92%;
+
+    --popover: 25 20% 18%;
+    --popover-foreground: 30 25% 92%;
+
+    --primary: 15 65% 62%;
+    --primary-foreground: 30 30% 98%;
+
+    --secondary: 145 25% 55%;
+    --secondary-foreground: 30 30% 98%;
+
+    --muted: 25 15% 22%;
+    --muted-foreground: 30 15% 65%;
+
+    --accent: 25 18% 24%;
+    --accent-foreground: 15 65% 62%;
+
+    --destructive: 0 70% 55%;
+    --destructive-foreground: 30 25% 92%;
+
+    --border: 25 15% 24%;
+    --input: 25 15% 22%;
+    --ring: 15 65% 62%;
+
+    --sidebar-background: 25 18% 14%;
+    --sidebar-foreground: 30 25% 92%;
+    --sidebar-primary: 15 65% 62%;
+    --sidebar-primary-foreground: 30 30% 98%;
+    --sidebar-accent: 25 15% 22%;
+    --sidebar-accent-foreground: 30 25% 92%;
+    --sidebar-border: 25 15% 24%;
+    --sidebar-ring: 15 65% 62%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+    font-variation-settings: 'opsz' auto;
+  }
+
+  /* Premium hospital-grade aesthetics */
+  .glass-effect {
+    @apply backdrop-blur-sm bg-card/80 border border-border/50;
+  }
+
+  .hover-lift {
+    @apply transition-all duration-300 hover:-translate-y-0.5;
+  }
+
+  .hover-lift:hover {
+    box-shadow: var(--shadow-elevated);
+  }
+
+  .soft-shadow {
+    box-shadow: var(--shadow-soft);
+  }
+
+  .card-shadow {
+    box-shadow: var(--shadow-card);
+  }
+
+  .elevated-shadow {
+    box-shadow: var(--shadow-elevated);
+  }
+}
