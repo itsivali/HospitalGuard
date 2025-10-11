@@ -86,7 +86,7 @@ const Dashboard = () => {
   }
 
   const getDashboardContent = () => {
-    if (roles.includes("doctor")) {
+    if (roles.includes("doctor") || roles.includes("hospital")) {
       return {
         title: "Doctor Dashboard",
         description: "Manage prescriptions and patient care",
@@ -95,24 +95,24 @@ const Dashboard = () => {
           {
             icon: FileText,
             title: "Create Prescription",
-            description: "Issue new prescriptions for patients",
+            description: "Issue digital prescriptions with SHA pre-authorization and safety checks",
             color: "bg-rose-500/10 text-rose-600 group-hover:bg-rose-500/20"
           },
           {
             icon: Pill,
             title: "My Prescriptions",
-            description: "View and manage prescriptions you've created",
+            description: "View and manage all prescriptions you've created with status tracking",
             color: "bg-primary/10 text-primary group-hover:bg-primary/20"
           },
           {
             icon: Activity,
             title: "Patient History",
-            description: "Review patient medication history",
+            description: "Review patient medication history and identify potential drug interactions",
             color: "bg-secondary/10 text-secondary group-hover:bg-secondary/20"
           },
         ],
       };
-    } else if (roles.includes("pharmacist")) {
+    } else if (roles.includes("pharmacist") || roles.includes("pharmacy")) {
       return {
         title: "Pharmacist Dashboard",
         description: "Validate and dispense prescriptions",
@@ -121,24 +121,24 @@ const Dashboard = () => {
           {
             icon: CheckCircle2,
             title: "Validate Prescription",
-            description: "Verify and fill prescriptions",
+            description: "Verify digital signatures and authenticate prescriptions with PPB compliance",
             color: "bg-secondary/10 text-secondary group-hover:bg-secondary/20"
           },
           {
             icon: Clock,
             title: "Pending Reviews",
-            description: "Prescriptions awaiting validation",
+            description: "Process SHA claims and M-Pesa payments for awaiting prescriptions",
             color: "bg-amber-500/10 text-amber-600 group-hover:bg-amber-500/20"
           },
           {
             icon: TrendingUp,
             title: "Dispensing History",
-            description: "Track filled prescriptions",
+            description: "Track filled prescriptions and report counterfeit drug incidents",
             color: "bg-primary/10 text-primary group-hover:bg-primary/20"
           },
         ],
       };
-    } else if (roles.includes("admin")) {
+    } else if (roles.includes("admin") || roles.includes("ppb")) {
       return {
         title: "Admin Dashboard",
         description: "System oversight and compliance",
@@ -147,19 +147,19 @@ const Dashboard = () => {
           {
             icon: Users,
             title: "User Management",
-            description: "Manage roles and permissions",
+            description: "Manage roles, permissions, and facility access across Nairobi network",
             color: "bg-violet-500/10 text-violet-600 group-hover:bg-violet-500/20"
           },
           {
             icon: AlertCircle,
-            title: "Compliance Alerts",
-            description: "Monitor suspicious activity",
+            title: "Fraud Detection",
+            description: "Monitor suspicious activity, duplicate prescriptions, and PPB alerts",
             color: "bg-destructive/10 text-destructive group-hover:bg-destructive/20"
           },
           {
             icon: Activity,
             title: "Audit Logs",
-            description: "Review system activity",
+            description: "Review complete system activity and generate compliance reports",
             color: "bg-primary/10 text-primary group-hover:bg-primary/20"
           },
         ],
@@ -173,19 +173,19 @@ const Dashboard = () => {
           {
             icon: Pill,
             title: "My Prescriptions",
-            description: "View active and past prescriptions",
+            description: "View active and past prescriptions with SMS/WhatsApp access",
             color: "bg-primary/10 text-primary group-hover:bg-primary/20"
           },
           {
             icon: Clock,
             title: "Refill Status",
-            description: "Track prescription refills",
+            description: "Track prescription refills and SHA coverage for your medications",
             color: "bg-secondary/10 text-secondary group-hover:bg-secondary/20"
           },
           {
             icon: AlertCircle,
             title: "Notifications",
-            description: "Important prescription alerts",
+            description: "Important prescription alerts and drug authenticity verification",
             color: "bg-amber-500/10 text-amber-600 group-hover:bg-amber-500/20"
           },
         ],

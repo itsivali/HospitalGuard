@@ -11,7 +11,13 @@ import {
   Sparkles,
   ArrowRight,
   CheckCircle2,
-  Zap
+  Zap,
+  Smartphone,
+  QrCode,
+  BarChart3,
+  ShieldCheck,
+  Globe,
+  Database
 } from "lucide-react";
 
 const Index = () => {
@@ -20,55 +26,55 @@ const Index = () => {
   const features = [
     {
       icon: Shield,
-      title: "Secure Authentication",
-      description: "Role-based access control for doctors, pharmacists, patients, and administrators",
+      title: "Secure Role-Based Access",
+      description: "Advanced authentication for doctors, pharmacists, patients, and administrators with SHA integration for Nairobi facilities",
     },
     {
       icon: FileCheck,
-      title: "Prescription Tracking",
-      description: "Real-time monitoring of prescription lifecycle from creation to dispensing",
+      title: "Digital Prescription Tracking",
+      description: "Real-time monitoring of prescription lifecycle from creation to dispensing with counterfeit drug verification",
     },
     {
       icon: Lock,
       title: "Controlled Substance Management",
-      description: "Special handling and alerts for controlled medications to prevent misuse",
+      description: "PPB-compliant handling and alerts for controlled medications to prevent misuse and ensure regulatory compliance",
     },
     {
       icon: AlertCircle,
-      title: "Misuse Prevention",
-      description: "Automated alerts for duplicate prescriptions, early refills, and suspicious patterns",
+      title: "Fraud Detection System",
+      description: "AI-powered alerts for duplicate prescriptions, early refills, and suspicious patterns across Nairobi's network",
     },
     {
       icon: Activity,
-      title: "Audit Trail",
-      description: "Complete activity logs ensuring accountability for all prescription actions",
+      title: "Complete Audit Trail",
+      description: "Immutable activity logs ensuring accountability for all prescription actions with SHA claims integration",
     },
     {
-      icon: Users,
-      title: "Multi-Role Support",
-      description: "Tailored interfaces for healthcare providers, pharmacies, and patients",
+      icon: Smartphone,
+      title: "Mobile-First Access",
+      description: "SMS/WhatsApp notifications and M-Pesa payments for seamless prescription management on any device",
     },
   ];
 
   const roleDescriptions = [
     {
-      role: "Doctors",
-      description: "Create and digitally sign prescriptions with built-in safety checks",
+      role: "Doctors & Hospitals",
+      description: "Create and digitally sign prescriptions with built-in safety checks, SHA pre-authorization, and patient medication history",
       color: "text-primary",
     },
     {
       role: "Pharmacists",
-      description: "Validate prescriptions and track dispensing with secure verification",
+      description: "Validate prescriptions, verify drug authenticity, process SHA/M-Pesa payments, and track dispensing with secure verification",
       color: "text-secondary",
     },
     {
       role: "Patients",
-      description: "View prescription history, refill status, and receive notifications",
+      description: "View prescription history, track refill status, receive SMS/WhatsApp notifications, and verify medication authenticity",
       color: "text-accent-foreground",
     },
     {
       role: "Administrators",
-      description: "Monitor system usage, detect patterns, and ensure compliance",
+      description: "Monitor system usage, detect fraud patterns, ensure PPB compliance, and generate comprehensive audit reports",
       color: "text-destructive",
     },
   ];
@@ -103,7 +109,7 @@ const Index = () => {
         <div className="max-w-5xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary/10 rounded-full mb-8 soft-shadow border border-primary/20">
             <Sparkles className="w-5 h-5 text-primary" />
-            <span className="text-sm font-semibold text-primary">Next-Generation Healthcare Technology</span>
+            <span className="text-sm font-semibold text-primary">Launching in Nairobi · 2025</span>
           </div>
           <h2 className="text-5xl md:text-7xl font-bold mb-8 leading-tight tracking-tight">
             Secure Prescription Management for{" "}
@@ -112,8 +118,8 @@ const Index = () => {
             </span>
           </h2>
           <p className="text-xl md:text-2xl text-muted-foreground mb-12 leading-relaxed max-w-3xl mx-auto">
-            Prevent prescription misuse, ensure accountability, and streamline healthcare delivery
-            with our comprehensive tracking and compliance platform
+            Prevent prescription misuse, ensure accountability, and streamline healthcare delivery for Nairobi's
+            hospitals and pharmacies with SHA integration, M-Pesa payments, and PPB-compliant tracking
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
             <Button
@@ -229,7 +235,7 @@ const Index = () => {
               Ready to Transform Healthcare?
             </CardTitle>
             <CardDescription className="text-primary-foreground/90 text-xl mb-10 max-w-2xl mx-auto leading-relaxed">
-              Join healthcare providers who trust PrescriptionGuard for secure, compliant prescription management
+              Join Nairobi's hospitals and pharmacies in secure, compliant prescription management with SHA integration
             </CardDescription>
             <div className="flex gap-4 justify-center">
               <Button
