@@ -158,28 +158,63 @@ const Index = () => {
             Digital prescriptions with QR authentication, telemedicine aftercare, and comprehensive billing in one luxurious platform.
           </motion.p>
 
+          {/* Role Selection Cards */}
           <motion.div
-            className="flex gap-4 justify-center flex-wrap"
+            className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
           >
-            <Button
-              size="lg"
-              onClick={() => navigate("/auth")}
-              className="gradient-royal hover-scale luxury-shadow px-10 py-7 text-lg group btn-press"
+            {/* Patient Login */}
+            <Card
+              className="hover-lift card-shadow cursor-pointer group border-2 border-primary/20 hover:border-primary/40 transition-all"
+              onClick={() => navigate("/auth?role=patient")}
             >
-              <span>Get Started</span>
-              <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="hover-lift card-shadow px-10 py-7 text-lg group btn-press border-2"
+              <CardContent className="flex flex-col items-center p-8 gap-4">
+                <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Users className="w-10 h-10 text-primary" />
+                </div>
+                <div className="text-center">
+                  <h3 className="text-xl font-bold mb-2">Patient Portal</h3>
+                  <p className="text-sm text-muted-foreground">Access your medical records and history</p>
+                </div>
+                <ArrowRight className="w-5 h-5 text-primary group-hover:translate-x-1 transition-transform" />
+              </CardContent>
+            </Card>
+
+            {/* Hospital Staff Login */}
+            <Card
+              className="hover-lift card-shadow cursor-pointer group border-2 border-secondary/20 hover:border-secondary/40 transition-all"
+              onClick={() => navigate("/auth?role=staff")}
             >
-              <Zap className="w-5 h-5 mr-2 group-hover:text-primary transition-colors" />
-              <span>Watch Demo</span>
-            </Button>
+              <CardContent className="flex flex-col items-center p-8 gap-4">
+                <div className="w-20 h-20 bg-secondary/10 rounded-3xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Stethoscope className="w-10 h-10 text-secondary" />
+                </div>
+                <div className="text-center">
+                  <h3 className="text-xl font-bold mb-2">Hospital Staff</h3>
+                  <p className="text-sm text-muted-foreground">Doctors, Nurses, Lab & Radiology</p>
+                </div>
+                <ArrowRight className="w-5 h-5 text-secondary group-hover:translate-x-1 transition-transform" />
+              </CardContent>
+            </Card>
+
+            {/* Pharmacy & Billing Login */}
+            <Card
+              className="hover-lift card-shadow cursor-pointer group border-2 border-accent/20 hover:border-accent/40 transition-all"
+              onClick={() => navigate("/auth?role=admin")}
+            >
+              <CardContent className="flex flex-col items-center p-8 gap-4">
+                <div className="w-20 h-20 bg-accent/10 rounded-3xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <ShieldCheck className="w-10 h-10 text-accent" />
+                </div>
+                <div className="text-center">
+                  <h3 className="text-xl font-bold mb-2">Pharmacy & Billing</h3>
+                  <p className="text-sm text-muted-foreground">Prescriptions & Financial Management</p>
+                </div>
+                <ArrowRight className="w-5 h-5 text-accent group-hover:translate-x-1 transition-transform" />
+              </CardContent>
+            </Card>
           </motion.div>
 
           {/* Department Grid */}
