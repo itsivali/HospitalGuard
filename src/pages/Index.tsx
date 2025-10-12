@@ -8,7 +8,6 @@ import {
   Stethoscope,
   Activity,
   ShieldCheck,
-  Sparkles,
   ArrowRight,
   Zap,
   CheckCircle2,
@@ -132,7 +131,7 @@ const Index = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <Sparkles className="w-5 h-5 text-white drop-shadow-lg" />
+            <Hospital className="w-5 h-5 text-white drop-shadow-lg" />
             <span className="text-base font-bold text-white drop-shadow-lg tracking-wide">The Future of Hospital Management</span>
           </motion.div>
 
@@ -390,7 +389,7 @@ const Index = () => {
           <div className="absolute inset-0 shimmer opacity-20"></div>
           <CardHeader className="text-center py-20 relative z-10">
             <div className="inline-flex items-center gap-2 px-5 py-2 bg-white/10 rounded-full mb-6 border border-white/20">
-              <Sparkles className="w-4 h-4 text-white" />
+              <Hospital className="w-4 h-4 text-white" />
               <span className="text-sm font-semibold text-white">Transform Your Hospital Today</span>
             </div>
             <CardTitle className="text-4xl md:text-6xl font-bold mb-6 text-white tracking-tight">

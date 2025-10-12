@@ -15,7 +15,6 @@ import {
   Clock,
   AlertCircle,
   User,
-  Sparkles,
   CheckCircle2,
   Users,
   Stethoscope,

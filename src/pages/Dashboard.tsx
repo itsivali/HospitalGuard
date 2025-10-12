@@ -26,7 +26,6 @@ import {
   Pill,
   Scan,
   ShieldCheck,
-  Sparkles,
   Stethoscope,
   Syringe,
   Users,
@@ -391,7 +390,7 @@ const Dashboard = () => {
                   HospitalGuard
                 </h1>
                 <div className="flex items-center gap-2 mt-1">
-                  <Sparkles className="w-3.5 h-3.5 text-accent" />
+                  <Hospital className="w-3.5 h-3.5 text-accent" />
                   <p className="text-xs text-muted-foreground font-medium">
                     {roles.map(r => r.charAt(0).toUpperCase() + r.slice(1)).join(" • ") || "Staff Member"}
                   </p>
@@ -593,7 +592,7 @@ const Dashboard = () => {
                   <CardHeader>
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 bg-gradient-gold rounded-xl flex items-center justify-center">
-                        <Sparkles className="w-6 h-6 text-white" />
+                        <Hospital className="w-6 h-6 text-white" />
                       </div>
                       <div>
                         <CardTitle className="text-2xl">Coming Soon to {dept.name}</CardTitle>

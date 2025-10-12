@@ -14,7 +14,6 @@ import {
   Clock,
   AlertCircle,
   User,
-  Sparkles,
   CheckCircle2,
   QrCode,
   Package,
@@ -234,7 +233,7 @@ const PharmacistDashboard = () => {
           <Card className="card-shadow hover-lift">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-accent" />
+                <Hospital className="w-5 h-5 text-accent" />
                 Action Items
               </CardTitle>
               <CardDescription>Requires attention</CardDescription>

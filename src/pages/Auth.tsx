@@ -14,7 +14,6 @@ import {
   Mail,
   User,
   Phone,
-  Sparkles,
   CheckCircle2,
   Users,
   Stethoscope,
@@ -197,7 +196,7 @@ const Auth = () => {
             {roleInfo.title}
           </h1>
           <p className="text-muted-foreground text-lg flex items-center justify-center gap-2">
-            <Sparkles className="w-4 h-4 text-primary" />
+            <Hospital className="w-4 h-4 text-primary" />
             {roleInfo.description}
           </p>
         </div>
