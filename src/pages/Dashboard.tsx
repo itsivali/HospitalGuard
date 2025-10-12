@@ -87,7 +87,32 @@ const Dashboard = () => {
 
       if (error) throw error;
 
-      setRoles(userRoles?.map((r: UserRole) => r.role) || []);
+      const userRolesList = userRoles?.map((r: UserRole) => r.role) || [];
+      setRoles(userRolesList);
+
+      // Redirect to role-specific dashboard
+      if (userRolesList.length > 0) {
+        const primaryRole = userRolesList[0];
+
+        // Route to specific dashboards based on role
+        if (primaryRole === "patient") {
+          navigate("/patient-dashboard");
+          return;
+        } else if (primaryRole === "doctor") {
+          navigate("/doctor-dashboard");
+          return;
+        } else if (primaryRole === "nurse") {
+          navigate("/nurse-dashboard");
+          return;
+        } else if (primaryRole === "pharmacist") {
+          navigate("/pharmacist-dashboard");
+          return;
+        } else if (primaryRole === "billing") {
+          navigate("/billing-dashboard");
+          return;
+        }
+        // For other roles (admin, lab_tech, radiologist, etc.), stay on general dashboard
+      }
     } catch (error: unknown) {
       toast({
         title: "Error",
