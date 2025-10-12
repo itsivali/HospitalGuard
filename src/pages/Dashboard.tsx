@@ -85,38 +85,49 @@ const Dashboard = () => {
         .select("role")
         .eq("user_id", user.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching roles:", error);
+        toast({
+          title: "Role Fetch Error",
+          description: "Could not load user roles. Please contact support if this persists.",
+          variant: "destructive",
+        });
+        setRoles([]);
+        setIsLoading(false);
+        return;
+      }
 
       const userRolesList = userRoles?.map((r: UserRole) => r.role) || [];
       setRoles(userRolesList);
 
-      // Redirect to role-specific dashboard
-      if (userRolesList.length > 0) {
+      // Redirect to role-specific dashboard only if on /dashboard route
+      if (userRolesList.length > 0 && window.location.pathname === "/dashboard") {
         const primaryRole = userRolesList[0];
 
         // Route to specific dashboards based on role
         if (primaryRole === "patient") {
-          navigate("/patient-dashboard");
+          navigate("/patient-dashboard", { replace: true });
           return;
         } else if (primaryRole === "doctor") {
-          navigate("/doctor-dashboard");
+          navigate("/doctor-dashboard", { replace: true });
           return;
         } else if (primaryRole === "nurse") {
-          navigate("/nurse-dashboard");
+          navigate("/nurse-dashboard", { replace: true });
           return;
         } else if (primaryRole === "pharmacist") {
-          navigate("/pharmacist-dashboard");
+          navigate("/pharmacist-dashboard", { replace: true });
           return;
         } else if (primaryRole === "billing") {
-          navigate("/billing-dashboard");
+          navigate("/billing-dashboard", { replace: true });
           return;
         }
         // For other roles (admin, lab_tech, radiologist, etc.), stay on general dashboard
       }
     } catch (error: unknown) {
+      console.error("Auth check error:", error);
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "An error occurred",
+        title: "Authentication Error",
+        description: error instanceof Error ? error.message : "An unexpected error occurred",
         variant: "destructive",
       });
     } finally {

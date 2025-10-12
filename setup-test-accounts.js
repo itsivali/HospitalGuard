@@ -159,9 +159,46 @@ async function insertUserRole(userId, role) {
   }
 }
 
+async function checkUserRolesTable() {
+  try {
+    // Try to query the user_roles table
+    const { error } = await supabase
+      .from('user_roles')
+      .select('*')
+      .limit(1);
+
+    if (error) {
+      if (error.message.includes('relation') || error.message.includes('does not exist')) {
+        console.error('\n❌ ERROR: user_roles table does not exist!\n');
+        console.error('📋 SETUP INSTRUCTIONS:');
+        console.error('1. Open your Supabase project dashboard');
+        console.error('2. Go to SQL Editor');
+        console.error('3. Run the SQL from: supabase-schema.sql');
+        console.error('4. Then run this script again\n');
+        return false;
+      }
+      throw error;
+    }
+    return true;
+  } catch (error) {
+    console.error('❌ Error checking user_roles table:', error.message);
+    return false;
+  }
+}
+
 async function main() {
   console.log('🏥 HospitalGuard Test Account Setup');
   console.log('=====================================\n');
+
+  // Check if user_roles table exists
+  console.log('🔍 Checking database setup...');
+  const tableExists = await checkUserRolesTable();
+
+  if (!tableExists) {
+    process.exit(1);
+  }
+
+  console.log('✅ Database ready\n');
   console.log('Creating test accounts for all roles...\n');
 
   for (const account of testAccounts) {
@@ -183,7 +220,7 @@ async function main() {
   });
 
   console.log('\n\n🚀 You can now login with any of these accounts!');
-  console.log('Visit: http://localhost:8081/\n');
+  console.log('Visit: http://localhost:8080/auth\n');
 }
 
 main().catch(console.error);
