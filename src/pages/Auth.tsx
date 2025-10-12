@@ -131,24 +131,40 @@ const Auth = () => {
 
       if (error) throw error;
 
-      // Also insert into user_roles table
-      if (data.user) {
-        await supabase.from("user_roles").insert({
-          user_id: data.user.id,
-          role: signupData.role,
+      // Check if email confirmation is required
+      const emailConfirmationRequired = !data.session && data.user;
+
+      if (emailConfirmationRequired) {
+        // Email confirmation is enabled - user will be created after confirmation
+        // Database trigger will handle role assignment
+        toast({
+          title: "Check your email!",
+          description: "We've sent you a confirmation link. Please check your inbox to complete registration.",
         });
+      } else {
+        // Email confirmation is disabled - insert role immediately
+        if (data.user) {
+          const { error: roleError } = await supabase.from("user_roles").insert({
+            user_id: data.user.id,
+            role: signupData.role,
+          });
+
+          if (roleError && !roleError.message.includes('duplicate')) {
+            console.error("Role insertion error:", roleError);
+          }
+        }
+
+        toast({
+          title: "Account created!",
+          description: "You can now log in with your credentials.",
+        });
+
+        // Switch to login tab
+        setTimeout(() => {
+          const loginTab = document.querySelector('[value="login"]') as HTMLButtonElement;
+          loginTab?.click();
+        }, 1000);
       }
-
-      toast({
-        title: "Account created!",
-        description: "You can now log in with your credentials.",
-      });
-
-      // Switch to login tab
-      setTimeout(() => {
-        const loginTab = document.querySelector('[value="login"]') as HTMLButtonElement;
-        loginTab?.click();
-      }, 1000);
     } catch (error: unknown) {
       toast({
         title: "Signup failed",

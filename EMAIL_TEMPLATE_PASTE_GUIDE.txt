@@ -1,0 +1,205 @@
+═══════════════════════════════════════════════════════════════
+   HOW TO PASTE EMAIL TEMPLATES IN SUPABASE
+═══════════════════════════════════════════════════════════════
+
+IMPORTANT: The email templates are LONG (200+ lines of HTML).
+You MUST copy the ENTIRE file, from the very first line to the last.
+
+═══════════════════════════════════════════════════════════════
+STEP 1: Open the HTML File
+═══════════════════════════════════════════════════════════════
+
+1. Navigate to: email-templates/confirm-signup.html
+2. Open with any text editor (VS Code, Notepad, etc.)
+
+═══════════════════════════════════════════════════════════════
+STEP 2: Select ALL Content
+═══════════════════════════════════════════════════════════════
+
+Method A (Keyboard):
+- Click inside the file
+- Press Ctrl+A (Windows) or Cmd+A (Mac)
+- Press Ctrl+C (Windows) or Cmd+C (Mac)
+
+Method B (Mouse):
+- Click at the very start: <!DOCTYPE html>
+- Scroll to the very end: </html>
+- Shift+Click to select everything
+- Right-click → Copy
+
+═══════════════════════════════════════════════════════════════
+STEP 3: Open Supabase Email Templates
+═══════════════════════════════════════════════════════════════
+
+1. Go to: https://supabase.com/dashboard/project/hdpavdwanzydfcudogar
+2. Click: Authentication (left sidebar)
+3. Click: Email Templates
+4. Click: "Confirm signup"
+
+═══════════════════════════════════════════════════════════════
+STEP 4: Replace the Content
+═══════════════════════════════════════════════════════════════
+
+You'll see something like this:
+
+┌────────────────────────────────────────────────────────────┐
+│ Confirm signup                                             │
+├────────────────────────────────────────────────────────────┤
+│ Subject: Confirm Your Signup                               │
+│                                                            │
+│ ┌────────────────────────────────────────────────────────┐ │
+│ │ <h2>Confirm your signup</h2>                           │ │
+│ │                                                        │ │
+│ │ <p>Follow this link to confirm your user:</p>         │ │
+│ │ <p><a href="{{ .ConfirmationURL }}">Confirm...</a></p>│ │
+│ │                                                        │ │
+│ │ ... more HTML ...                                     │ │
+│ └────────────────────────────────────────────────────────┘ │
+│                                                            │
+│                                         [Save]    [Cancel] │
+└────────────────────────────────────────────────────────────┘
+
+IMPORTANT STEPS:
+
+1. Click INSIDE the big text box (where the HTML is)
+
+2. Press Ctrl+A (select all current content)
+
+3. Press Ctrl+V (paste your copied template)
+
+4. Verify you see:
+   - <!DOCTYPE html> at the top
+   - </html> at the bottom
+   - Lots of purple/gradient code
+   - "HospitalGuard" text
+
+5. Optionally update the Subject line:
+   Change: "Confirm Your Signup"
+   To: "Welcome to HospitalGuard - Confirm Your Email"
+
+6. Click [Save] button (bottom right)
+
+7. Wait for "Successfully updated" message
+
+═══════════════════════════════════════════════════════════════
+STEP 5: Verify It Saved Correctly
+═══════════════════════════════════════════════════════════════
+
+1. Refresh the page (F5)
+2. Click "Confirm signup" again
+3. Scroll through the HTML
+4. Look for these key elements:
+
+   ✓ Should see: <h1>HospitalGuard</h1>
+   ✓ Should see: background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+   ✓ Should see: HIPAA compliance
+   ✓ Should see: Hospital icon SVG
+
+If you see generic HTML instead, you need to paste again!
+
+═══════════════════════════════════════════════════════════════
+VISUAL CHECK: What You Should See After Pasting
+═══════════════════════════════════════════════════════════════
+
+The HTML editor should show something like:
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirm Your Email - HospitalGuard</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI'...
+    }
+    .email-container {
+      max-width: 600px;
+      margin: 40px auto;
+      ... lots more CSS ...
+    }
+  </style>
+</head>
+<body>
+  <div class="email-container">
+    <!-- Header -->
+    <div class="header">
+      ... hospital icon SVG ...
+      <h1>HospitalGuard</h1>
+      ... purple gradient code ...
+    </div>
+    ... rest of template ...
+  </div>
+</body>
+</html>
+
+═══════════════════════════════════════════════════════════════
+REPEAT FOR OTHER TEMPLATES (OPTIONAL)
+═══════════════════════════════════════════════════════════════
+
+After saving "Confirm signup", optionally do the same for:
+
+📧 Magic Link:
+   - File: email-templates/magic-link.html
+   - Template: Click "Magic Link" in Supabase
+   - Colors: Green gradient
+   - Subject: "Sign In to HospitalGuard"
+
+📧 Reset Password:
+   - File: email-templates/recovery.html
+   - Template: Click "Reset Password" in Supabase
+   - Colors: Red gradient
+   - Subject: "Reset Your HospitalGuard Password"
+
+═══════════════════════════════════════════════════════════════
+TEST IT WORKS
+═══════════════════════════════════════════════════════════════
+
+1. Sign up with a NEW email (not one you used before)
+2. Check your email inbox
+3. Email should have:
+   ✓ Purple gradient header
+   ✓ Hospital icon
+   ✓ "HospitalGuard" title
+   ✓ Professional design
+
+If email still looks generic:
+- You didn't copy the entire file
+- You didn't click Save
+- Browser cache - try private/incognito window
+
+═══════════════════════════════════════════════════════════════
+COMMON MISTAKES
+═══════════════════════════════════════════════════════════════
+
+❌ MISTAKE: Only copied visible part of file
+   ✓ FIX: Open file in editor, Ctrl+A, Ctrl+C
+
+❌ MISTAKE: Didn't click Save button
+   ✓ FIX: Scroll down and click [Save]
+
+❌ MISTAKE: Copied subject line into HTML box
+   ✓ FIX: Subject goes in "Subject" field, HTML goes in big box
+
+❌ MISTAKE: Template has template variables like {{.ConfirmationURL}}
+   ✓ FIX: That's correct! Supabase replaces these automatically
+
+❌ MISTAKE: Email still generic after saving
+   ✓ FIX: Sign up with NEW email, old emails won't update
+
+═══════════════════════════════════════════════════════════════
+DONE!
+═══════════════════════════════════════════════════════════════
+
+Once you see the branded email in your inbox, you're all set!
+
+The email should look professional with:
+- Purple gradient header
+- Hospital icon logo
+- Modern, clean design
+- Security badges
+- Branded footer
+
+═══════════════════════════════════════════════════════════════
