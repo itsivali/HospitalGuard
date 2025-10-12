@@ -436,15 +436,15 @@ const Dashboard = () => {
 
         {/* Department Tabs */}
         <Tabs value={selectedDepartment} onValueChange={setSelectedDepartment} className="w-full">
-          <TabsList className="w-full justify-start overflow-x-auto bg-card/80 backdrop-blur-md p-4 rounded-3xl luxury-shadow mb-8 flex-nowrap gap-3">
+          <TabsList className="w-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 bg-card/80 backdrop-blur-md p-4 rounded-3xl luxury-shadow mb-8 gap-3 h-auto">
             {departments.map((dept) => (
               <TabsTrigger
                 key={dept.id}
                 value={dept.id}
-                className="flex items-center gap-3 px-8 py-4 rounded-2xl btn-press text-base font-semibold transition-all duration-300 data-[state=active]:gradient-royal data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 data-[state=inactive]:hover:bg-muted/50 data-[state=inactive]:text-foreground whitespace-nowrap cursor-pointer"
+                className="flex items-center justify-center gap-3 px-6 py-5 rounded-2xl btn-press text-base font-semibold transition-all duration-300 data-[state=active]:gradient-royal data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 data-[state=inactive]:hover:bg-muted/50 data-[state=inactive]:text-foreground cursor-pointer h-auto"
               >
-                <dept.icon className="w-6 h-6" />
-                <span className="text-base">{dept.name}</span>
+                <dept.icon className="w-6 h-6 flex-shrink-0" />
+                <span className="text-base whitespace-nowrap">{dept.name}</span>
               </TabsTrigger>
             ))}
           </TabsList>

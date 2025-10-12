@@ -127,13 +127,13 @@ const Index = () => {
       <section className="container mx-auto px-6 py-24 md:py-32">
         <div className="max-w-5xl mx-auto text-center">
           <motion.div
-            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-royal rounded-full mb-8 luxury-shadow"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-primary via-secondary to-tertiary rounded-full mb-8 luxury-shadow border-2 border-white/20"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <Sparkles className="w-5 h-5 text-white" />
-            <span className="text-sm font-semibold text-white">The Future of Hospital Management</span>
+            <Sparkles className="w-5 h-5 text-white drop-shadow-lg" />
+            <span className="text-base font-bold text-white drop-shadow-lg tracking-wide">The Future of Hospital Management</span>
           </motion.div>
 
           <motion.h2
@@ -182,22 +182,29 @@ const Index = () => {
             </Button>
           </motion.div>
 
-          {/* Department Pills */}
+          {/* Department Grid */}
           <motion.div
-            className="flex flex-wrap gap-3 justify-center mt-12"
+            className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto mt-12"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
           >
             {departments.map((dept, index) => (
-              <Badge
+              <motion.div
                 key={index}
-                variant="outline"
-                className="px-4 py-2 text-sm font-medium bg-card/50 backdrop-blur-sm hover-lift cursor-pointer"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, delay: 0.4 + index * 0.05 }}
               >
-                <dept.icon className={`w-4 h-4 mr-2 ${dept.color}`} />
-                {dept.name}
-              </Badge>
+                <Card className="hover-lift card-shadow cursor-pointer bg-card/50 backdrop-blur-sm border-border/50 group">
+                  <CardContent className="flex flex-col items-center justify-center p-6 gap-3">
+                    <div className={`w-12 h-12 ${dept.color === 'text-destructive' ? 'bg-destructive/10' : dept.color === 'text-coral' ? 'bg-coral/10' : dept.color === 'text-teal' ? 'bg-teal/10' : dept.color === 'text-tertiary' ? 'bg-tertiary/10' : dept.color === 'text-secondary' ? 'bg-secondary/10' : dept.color === 'text-accent' ? 'bg-accent/10' : 'bg-primary/10'} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
+                      <dept.icon className={`w-6 h-6 ${dept.color}`} />
+                    </div>
+                    <span className="text-sm font-semibold text-center">{dept.name}</span>
+                  </CardContent>
+                </Card>
+              </motion.div>
             ))}
           </motion.div>
         </div>
