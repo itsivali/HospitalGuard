@@ -1,73 +1,262 @@
-# Welcome to your Lovable project
+# HospitalGuard
 
-## Project info
+> **A Luxurious, Comprehensive Hospital Management System**
 
-**URL**: https://lovable.dev/projects/55ae0daa-3fb0-4d9d-8d82-84f60f6b247e
+HospitalGuard is a complete hospital management platform that tracks every patient's journey from admission to discharge and beyond, with telemedicine aftercare. Built with modern web technologies and designed to feel like a 5-star hotel experience.
 
-## How can I edit this code?
+![HospitalGuard](https://img.shields.io/badge/Status-In_Development-blue) ![React](https://img.shields.io/badge/React-18-61DAFB?logo=react) ![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript) ![Supabase](https://img.shields.io/badge/Supabase-Backend-3ECF8E?logo=supabase)
 
-There are several ways of editing your application.
+## Features
 
-**Use Lovable**
+### Complete Patient Journey Tracking
+Track patients from the moment they walk in until recovery at home:
+- **Registration & Check-In**: Streamlined patient registration with triage
+- **Multi-Department Care**: Emergency, ICU, Maternity, Mental Health, Pediatrics, Surgery, and more
+- **Comprehensive Visits**: Track consultations, lab tests, radiology, prescriptions, and treatments
+- **Billing Integration**: Complete financial management from admission to discharge
+- **Telemedicine Aftercare**: Doctors continue caring for patients remotely post-discharge
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/55ae0daa-3fb0-4d9d-8d82-84f60f6b247e) and start prompting.
+### Digital Prescriptions with QR Authentication
+- Doctors digitally sign prescriptions
+- QR codes authenticate each prescription
+- Hospital pharmacy scans and dispenses medication
+- Complete tracking from prescription to patient
+- Audit trail for accountability
 
-Changes made via Lovable will be committed automatically to this repo.
+### Multi-Department Management
+- **Emergency Room**: Critical care and triage
+- **ICU**: Intensive care unit monitoring
+- **Maternity**: Prenatal, delivery, and postnatal care
+- **Mental Health**: Psychiatric services and counseling
+- **Laboratory**: Diagnostic testing and results
+- **Radiology**: Medical imaging (X-Ray, CT, MRI, Ultrasound)
+- **Pharmacy**: Medication inventory and dispensing
+- **Billing**: Financial services and payment processing
+- **Outpatient**: General consultations and follow-ups
+- **Surgery**: Surgical procedures and operations
 
-**Use your preferred IDE**
+### Luxurious User Experience
+- **Smooth Animations**: Framer Motion powered transitions
+- **Rich Color Palette**: Department-specific color coding
+- **Button Animations**: Press, hover, and spring effects
+- **Premium Shadows**: Multi-layer shadow system
+- **Shimmer Effects**: Elegant visual feedback
+- **Custom Scrollbars**: Styled for premium feel
+- **Responsive Design**: Works beautifully on all devices
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Tech Stack
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- **Frontend Framework**: React 18 with TypeScript
+- **Build Tool**: Vite with SWC
+- **UI Library**: shadcn/ui (Radix UI) + Tailwind CSS
+- **Animations**: Framer Motion
+- **Icons**: Lucide React
+- **Backend**: Supabase (Auth, Database, Storage)
+- **State Management**: TanStack Query (React Query)
+- **Routing**: React Router v6
+- **Forms**: React Hook Form + Zod validation
+- **QR Codes**: qrcode & qr-scanner
+- **Styling**: Tailwind CSS with custom theming
 
-Follow these steps:
+## Getting Started
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Prerequisites
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+- Node.js 18+ and npm
+- Supabase account ([sign up free](https://supabase.com))
 
-# Step 3: Install the necessary dependencies.
-npm i
+### Installation
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+1. **Clone the repository**
+   ```bash
+   git clone <YOUR_GIT_URL>
+   cd <YOUR_PROJECT_NAME>
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables**
+
+   Create a `.env` file in the root directory:
+   ```env
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_PUBLISHABLE_KEY=your_supabase_anon_key
+   ```
+
+4. **Set up the database**
+
+   - Go to your Supabase project dashboard
+   - Navigate to SQL Editor
+   - Run the SQL script from `supabase-schema.sql`
+
+   This will create all necessary tables, indexes, and functions.
+
+5. **Start the development server**
+   ```bash
+   npm run dev
+   ```
+
+   The app will be available at `http://localhost:8080`
+
+## Development Commands
+
+```bash
+# Start development server
 npm run dev
+
+# Build for production
+npm run build
+
+# Build for development
+npm run build:dev
+
+# Run linter
+npm run lint
+
+# Preview production build
+npm run preview
 ```
 
-**Edit a file directly in GitHub**
+## Project Structure
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```
+src/
+├── components/
+│   └── ui/              # shadcn/ui components
+├── hooks/               # Custom React hooks
+├── integrations/
+│   └── supabase/        # Supabase client & types
+├── lib/
+│   └── utils.ts         # Utility functions
+├── pages/
+│   ├── Index.tsx        # Landing page
+│   ├── Auth.tsx         # Authentication
+│   ├── Dashboard.tsx    # Main dashboard (14 departments)
+│   └── NotFound.tsx     # 404 page
+├── App.tsx              # Root component
+├── main.tsx             # Entry point
+└── index.css            # Global styles & animations
+```
 
-**Use GitHub Codespaces**
+## Database Schema
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+The complete database schema is in `supabase-schema.sql` and includes:
 
-## What technologies are used for this project?
+- **Core Tables**: Patients, staff, departments
+- **Visit Management**: Complete patient journey tracking
+- **Medical Records**: Diagnoses, prescriptions, lab results
+- **Pharmacy**: Inventory, dispensing logs with QR codes
+- **Specialized Care**: Maternity, mental health records
+- **Billing**: Bills, payments, insurance tracking
+- **Telemedicine**: Video consultations and aftercare plans
+- **Appointments**: Scheduling across all departments
+- **Audit Logs**: Complete system activity tracking
 
-This project is built with:
+## User Roles
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- **Doctor**: Create prescriptions, manage consultations
+- **Nurse**: Patient monitoring, vitals, medication administration
+- **Pharmacist**: Prescription validation, medication dispensing
+- **Receptionist**: Patient registration, appointment scheduling
+- **Billing**: Financial management, invoicing, payments
+- **Lab Tech**: Laboratory test management
+- **Radiologist**: Medical imaging and diagnostics
+- **Psychiatrist**: Mental health services
+- **Obstetrician**: Maternity care
+- **Admin**: System oversight, user management
+- **Patient**: View own records and appointments
 
-## How can I deploy this project?
+## Color System
 
-Simply open [Lovable](https://lovable.dev/projects/55ae0daa-3fb0-4d9d-8d82-84f60f6b247e) and click on Share -> Publish.
+Our luxurious color palette:
+- **Royal Blue** - Trust & professional excellence
+- **Emerald Green** - Health, growth & wellness
+- **Soft Purple** - Care & compassion
+- **Gold/Amber** - Premium & attention
+- **Coral/Rose** - Maternity & warmth
+- **Teal** - Mental health & calm
+- **Crimson** - Emergency & critical care
 
-## Can I connect a custom domain to my Lovable project?
+## Custom Animations
 
-Yes, you can!
+Available animation classes:
+- `.btn-press` - Scale down on click
+- `.hover-lift` - Lift effect on hover
+- `.hover-scale` - Scale up on hover
+- `.hover-glow` - Glow effect on hover
+- `.shimmer` - Premium shimmer animation
+- `.btn-spring` - Spring-like transitions
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## Deployment
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+### Deploy with Lovable
+
+1. Open your [Lovable project](https://lovable.dev/projects/55ae0daa-3fb0-4d9d-8d82-84f60f6b247e)
+2. Click Share → Publish
+3. Your app will be deployed automatically
+
+### Custom Domain
+
+To connect a custom domain:
+1. Navigate to Project > Settings > Domains
+2. Click "Connect Domain"
+3. Follow the setup instructions
+
+[Learn more about custom domains](https://docs.lovable.dev/features/custom-domain#custom-domain)
+
+## Roadmap
+
+### Phase 1: Core Patient Flow (Current)
+- [x] Landing page with animations
+- [x] Multi-department dashboard
+- [x] Database schema design
+- [x] Luxurious UI theme
+- [ ] Patient registration flow
+- [ ] Visit tracking system
+
+### Phase 2: Medical Features
+- [ ] Digital prescription creation
+- [ ] QR code generation & scanning
+- [ ] Pharmacy dispensing workflow
+- [ ] Laboratory order management
+- [ ] Radiology imaging workflow
+
+### Phase 3: Telemedicine & Advanced
+- [ ] Video consultation integration
+- [ ] Aftercare plan management
+- [ ] Medical records system
+- [ ] Comprehensive reporting
+- [ ] Real-time notifications
+- [ ] Mobile app (PWA)
+
+## Contributing
+
+This is a private project, but contributions are welcome:
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## Documentation
+
+- **[CLAUDE.md](CLAUDE.md)** - Comprehensive development guide
+- **[supabase-schema.sql](supabase-schema.sql)** - Complete database schema
+
+## License
+
+This project is private and proprietary.
+
+## Support
+
+For questions or issues:
+- Open an issue in this repository
+- Contact the development team
+
+---
+
+**Built with care for exceptional healthcare experiences** 🏥✨

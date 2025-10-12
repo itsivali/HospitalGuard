@@ -4,24 +4,60 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { motion } from "framer-motion";
 import {
-  MdSecurity as Shield,
-  MdLogout as LogOut,
-  MdShowChart as Activity,
-  MdDescription as FileText,
-  MdPeople as Users,
-  MdWarning as AlertCircle,
-  MdMedication as Pill,
-  MdTrendingUp as TrendingUp,
-  MdAccessTime as Clock,
-  MdCheckCircle as CheckCircle2,
-  MdArrowForward as ArrowRight,
-  MdStars as Sparkles
-} from "react-icons/md";
+  Activity,
+  Ambulance,
+  Baby,
+  BedDouble,
+  Brain,
+  Building2,
+  Calendar,
+  ClipboardPlus,
+  CreditCard,
+  Heart,
+  Home,
+  Hospital,
+  Laptop,
+  LogOut,
+  Microscope,
+  Pill,
+  Scan,
+  ShieldCheck,
+  Sparkles,
+  Stethoscope,
+  Syringe,
+  Users,
+  Video,
+  Wallet,
+  Clock,
+  CheckCircle2,
+  ArrowRight,
+  TrendingUp,
+  UserCheck,
+  FileText,
+  AlertCircle
+} from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 
 interface UserRole {
   role: string;
+}
+
+interface Department {
+  id: string;
+  name: string;
+  icon: any;
+  color: string;
+  gradient: string;
+  description: string;
+  stats?: {
+    label: string;
+    value: number | string;
+    trend?: string;
+  }[];
 }
 
 const Dashboard = () => {
@@ -30,6 +66,7 @@ const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
   const [roles, setRoles] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedDepartment, setSelectedDepartment] = useState("overview");
 
   const checkAuth = async () => {
     try {
@@ -72,248 +109,474 @@ const Dashboard = () => {
     navigate("/");
   };
 
+  // Define all hospital departments
+  const departments: Department[] = [
+    {
+      id: "overview",
+      name: "Overview",
+      icon: Home,
+      color: "text-primary",
+      gradient: "gradient-royal",
+      description: "Hospital-wide dashboard and statistics",
+      stats: [
+        { label: "Active Patients", value: 156, trend: "+12%" },
+        { label: "Today's Visits", value: 48, trend: "+8%" },
+        { label: "Staff on Duty", value: 89, trend: "stable" }
+      ]
+    },
+    {
+      id: "registration",
+      name: "Registration",
+      icon: ClipboardPlus,
+      color: "text-primary",
+      gradient: "gradient-royal",
+      description: "Patient check-in and registration",
+      stats: [
+        { label: "Checked In Today", value: 48 },
+        { label: "Waiting", value: 12 },
+        { label: "Avg Wait Time", value: "8 min" }
+      ]
+    },
+    {
+      id: "emergency",
+      name: "Emergency",
+      icon: Ambulance,
+      color: "text-destructive",
+      gradient: "gradient-coral",
+      description: "Emergency room and critical care",
+      stats: [
+        { label: "Critical", value: 3, trend: "critical" },
+        { label: "In Treatment", value: 8 },
+        { label: "Waiting", value: 5 }
+      ]
+    },
+    {
+      id: "icu",
+      name: "ICU",
+      icon: Heart,
+      color: "text-destructive",
+      gradient: "gradient-coral",
+      description: "Intensive Care Unit",
+      stats: [
+        { label: "Occupied Beds", value: "12/15" },
+        { label: "Critical", value: 4 },
+        { label: "Stable", value: 8 }
+      ]
+    },
+    {
+      id: "outpatient",
+      name: "Outpatient",
+      icon: Stethoscope,
+      color: "text-primary",
+      gradient: "gradient-royal",
+      description: "General consultations and follow-ups",
+      stats: [
+        { label: "Consultations Today", value: 42 },
+        { label: "In Progress", value: 6 },
+        { label: "Scheduled", value: 18 }
+      ]
+    },
+    {
+      id: "maternity",
+      name: "Maternity",
+      icon: Baby,
+      color: "text-coral",
+      gradient: "gradient-coral",
+      description: "Maternity and obstetrics department",
+      stats: [
+        { label: "Expecting Mothers", value: 24 },
+        { label: "Deliveries Today", value: 3 },
+        { label: "Postnatal Care", value: 8 }
+      ]
+    },
+    {
+      id: "mental_health",
+      name: "Mental Health",
+      icon: Brain,
+      color: "text-teal",
+      gradient: "gradient-teal",
+      description: "Psychiatric and counseling services",
+      stats: [
+        { label: "Active Patients", value: 31 },
+        { label: "Sessions Today", value: 12 },
+        { label: "Crisis Calls", value: 2 }
+      ]
+    },
+    {
+      id: "pediatrics",
+      name: "Pediatrics",
+      icon: Heart,
+      color: "text-secondary",
+      gradient: "gradient-emerald",
+      description: "Children's health department",
+      stats: [
+        { label: "Young Patients", value: 28 },
+        { label: "Vaccinations", value: 15 },
+        { label: "Check-ups", value: 13 }
+      ]
+    },
+    {
+      id: "surgery",
+      name: "Surgery",
+      icon: Syringe,
+      color: "text-primary",
+      gradient: "gradient-royal",
+      description: "Surgical procedures and operations",
+      stats: [
+        { label: "Scheduled Today", value: 8 },
+        { label: "In Progress", value: 2 },
+        { label: "Completed", value: 4 }
+      ]
+    },
+    {
+      id: "laboratory",
+      name: "Laboratory",
+      icon: Microscope,
+      color: "text-tertiary",
+      gradient: "gradient-purple",
+      description: "Diagnostic testing and analysis",
+      stats: [
+        { label: "Tests Pending", value: 45 },
+        { label: "In Progress", value: 23 },
+        { label: "Completed Today", value: 89 }
+      ]
+    },
+    {
+      id: "radiology",
+      name: "Radiology",
+      icon: Scan,
+      color: "text-primary",
+      gradient: "gradient-royal",
+      description: "Medical imaging and diagnostics",
+      stats: [
+        { label: "Scans Today", value: 34 },
+        { label: "X-Rays", value: 18 },
+        { label: "MRI/CT", value: 16 }
+      ]
+    },
+    {
+      id: "pharmacy",
+      name: "Pharmacy",
+      icon: Pill,
+      color: "text-secondary",
+      gradient: "gradient-emerald",
+      description: "Medication management and dispensing",
+      stats: [
+        { label: "Prescriptions", value: 142 },
+        { label: "Dispensed", value: 98 },
+        { label: "Pending", value: 44 }
+      ]
+    },
+    {
+      id: "billing",
+      name: "Billing",
+      icon: CreditCard,
+      color: "text-accent",
+      gradient: "gradient-gold",
+      description: "Financial services and billing",
+      stats: [
+        { label: "Today's Revenue", value: "$24,850" },
+        { label: "Pending Bills", value: 34 },
+        { label: "Paid", value: 112 }
+      ]
+    },
+    {
+      id: "telemedicine",
+      name: "Telemedicine",
+      icon: Video,
+      color: "text-teal",
+      gradient: "gradient-teal",
+      description: "Remote consultations and aftercare",
+      stats: [
+        { label: "Sessions Today", value: 28 },
+        { label: "Active Now", value: 3 },
+        { label: "Follow-ups", value: 25 }
+      ]
+    }
+  ];
+
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center animate-pulse">
-            <Shield className="w-8 h-8 text-primary" />
-          </div>
-          <div className="text-muted-foreground animate-pulse">Loading your dashboard...</div>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-primary/5 to-background">
+        <motion.div
+          className="flex flex-col items-center gap-6"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <motion.div
+            className="w-20 h-20 bg-gradient-royal rounded-3xl flex items-center justify-center luxury-shadow"
+            animate={{
+              rotate: [0, 360],
+              scale: [1, 1.1, 1]
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          >
+            <Hospital className="w-10 h-10 text-white" />
+          </motion.div>
+          <motion.div
+            className="text-muted-foreground text-lg font-medium"
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            Loading HospitalGuard...
+          </motion.div>
+        </motion.div>
       </div>
     );
   }
 
-  const getDashboardContent = () => {
-    if (roles.includes("doctor") || roles.includes("hospital")) {
-      return {
-        title: "Doctor Dashboard",
-        description: "Manage prescriptions and patient care",
-        gradient: "from-rose-500/10 via-primary/5 to-transparent",
-        features: [
-          {
-            icon: FileText,
-            title: "Create Prescription",
-            description: "Issue digital prescriptions with SHA pre-authorization and safety checks",
-            color: "bg-rose-500/10 text-rose-600 group-hover:bg-rose-500/20"
-          },
-          {
-            icon: Pill,
-            title: "My Prescriptions",
-            description: "View and manage all prescriptions you've created with status tracking",
-            color: "bg-primary/10 text-primary group-hover:bg-primary/20"
-          },
-          {
-            icon: Activity,
-            title: "Patient History",
-            description: "Review patient medication history and identify potential drug interactions",
-            color: "bg-secondary/10 text-secondary group-hover:bg-secondary/20"
-          },
-        ],
-      };
-    } else if (roles.includes("pharmacist") || roles.includes("pharmacy")) {
-      return {
-        title: "Pharmacist Dashboard",
-        description: "Validate and dispense prescriptions",
-        gradient: "from-emerald-500/10 via-secondary/5 to-transparent",
-        features: [
-          {
-            icon: CheckCircle2,
-            title: "Validate Prescription",
-            description: "Verify digital signatures and authenticate prescriptions with PPB compliance",
-            color: "bg-secondary/10 text-secondary group-hover:bg-secondary/20"
-          },
-          {
-            icon: Clock,
-            title: "Pending Reviews",
-            description: "Process SHA claims and M-Pesa payments for awaiting prescriptions",
-            color: "bg-amber-500/10 text-amber-600 group-hover:bg-amber-500/20"
-          },
-          {
-            icon: TrendingUp,
-            title: "Dispensing History",
-            description: "Track filled prescriptions and report counterfeit drug incidents",
-            color: "bg-primary/10 text-primary group-hover:bg-primary/20"
-          },
-        ],
-      };
-    } else if (roles.includes("admin") || roles.includes("ppb")) {
-      return {
-        title: "Admin Dashboard",
-        description: "System oversight and compliance",
-        gradient: "from-violet-500/10 via-primary/5 to-transparent",
-        features: [
-          {
-            icon: Users,
-            title: "User Management",
-            description: "Manage roles, permissions, and facility access across Nairobi network",
-            color: "bg-violet-500/10 text-violet-600 group-hover:bg-violet-500/20"
-          },
-          {
-            icon: AlertCircle,
-            title: "Fraud Detection",
-            description: "Monitor suspicious activity, duplicate prescriptions, and PPB alerts",
-            color: "bg-destructive/10 text-destructive group-hover:bg-destructive/20"
-          },
-          {
-            icon: Activity,
-            title: "Audit Logs",
-            description: "Review complete system activity and generate compliance reports",
-            color: "bg-primary/10 text-primary group-hover:bg-primary/20"
-          },
-        ],
-      };
-    } else {
-      return {
-        title: "Patient Dashboard",
-        description: "View your prescriptions and health information",
-        gradient: "from-blue-500/10 via-primary/5 to-transparent",
-        features: [
-          {
-            icon: Pill,
-            title: "My Prescriptions",
-            description: "View active and past prescriptions with SMS/WhatsApp access",
-            color: "bg-primary/10 text-primary group-hover:bg-primary/20"
-          },
-          {
-            icon: Clock,
-            title: "Refill Status",
-            description: "Track prescription refills and SHA coverage for your medications",
-            color: "bg-secondary/10 text-secondary group-hover:bg-secondary/20"
-          },
-          {
-            icon: AlertCircle,
-            title: "Notifications",
-            description: "Important prescription alerts and drug authenticity verification",
-            color: "bg-amber-500/10 text-amber-600 group-hover:bg-amber-500/20"
-          },
-        ],
-      };
-    }
-  };
-
-  const dashboardContent = getDashboardContent();
+  const currentDept = departments.find(d => d.id === selectedDepartment) || departments[0];
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Premium Header with Glass Effect */}
-      <header className="border-b border-border/50 glass-effect sticky top-0 z-10">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <div className="absolute inset-0 bg-primary/20 rounded-2xl blur-xl"></div>
-              <div className="relative w-12 h-12 bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center shadow-lg">
-                <Shield className="w-7 h-7 text-primary-foreground" />
+    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background">
+      {/* Luxurious Header */}
+      <header className="glass-luxury sticky top-0 z-50 border-b">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <motion.div
+              className="flex items-center gap-4"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <div className="relative">
+                <div className="absolute inset-0 bg-primary/20 rounded-3xl blur-2xl animate-pulse"></div>
+                <div className="relative w-14 h-14 gradient-royal rounded-3xl flex items-center justify-center luxury-shadow hover-scale">
+                  <Hospital className="w-8 h-8 text-white" />
+                </div>
               </div>
-            </div>
-            <div>
-              <h1 className="font-bold text-xl tracking-tight">PrescriptionGuard</h1>
-              <div className="flex items-center gap-2 mt-0.5">
-                <Sparkles className="w-3 h-3 text-primary" />
-                <p className="text-xs text-muted-foreground font-medium">
-                  {roles.map(r => r.charAt(0).toUpperCase() + r.slice(1)).join(", ")}
-                </p>
+              <div>
+                <h1 className="font-bold text-2xl tracking-tight bg-gradient-to-r from-primary via-secondary to-tertiary bg-clip-text text-transparent">
+                  HospitalGuard
+                </h1>
+                <div className="flex items-center gap-2 mt-1">
+                  <Sparkles className="w-3.5 h-3.5 text-accent" />
+                  <p className="text-xs text-muted-foreground font-medium">
+                    {roles.map(r => r.charAt(0).toUpperCase() + r.slice(1)).join(" • ") || "Staff Member"}
+                  </p>
+                </div>
               </div>
-            </div>
+            </motion.div>
+
+            <motion.div
+              className="flex items-center gap-3"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <Badge variant="outline" className="px-3 py-1.5 bg-secondary/10 text-secondary border-secondary/20">
+                <Activity className="w-3 h-3 mr-1.5" />
+                Online
+              </Badge>
+              <Button
+                onClick={handleLogout}
+                variant="outline"
+                size="sm"
+                className="hover-lift card-shadow btn-press"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+              </Button>
+            </motion.div>
           </div>
-          <Button
-            onClick={handleLogout}
-            variant="outline"
-            size="sm"
-            className="hover-lift soft-shadow"
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            Logout
-          </Button>
         </div>
       </header>
 
-      {/* Main Content with Gradient Background */}
-      <main className="container mx-auto px-6 py-10">
-        {/* Hero Section */}
-        <div className={`mb-10 p-8 rounded-3xl bg-gradient-to-br ${dashboardContent.gradient} border border-border/50 soft-shadow`}>
-          <h2 className="text-4xl font-bold mb-3 tracking-tight">{dashboardContent.title}</h2>
-          <p className="text-muted-foreground text-lg">{dashboardContent.description}</p>
-        </div>
-
-        {/* Feature Cards Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-10">
-          {dashboardContent.features.map((feature, index) => (
-            <Card
-              key={index}
-              className="hover-lift card-shadow cursor-pointer group overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm"
-            >
-              <CardHeader className="pb-4">
-                <div className={`w-14 h-14 ${feature.color} rounded-2xl flex items-center justify-center mb-4 transition-all duration-300`}>
-                  <feature.icon className="w-7 h-7" />
-                </div>
-                <CardTitle className="text-xl group-hover:text-primary transition-colors">
-                  {feature.title}
-                </CardTitle>
-                <CardDescription className="text-base">
-                  {feature.description}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full group-hover:bg-primary/10 transition-colors"
-                >
-                  <span>Coming Soon</span>
-                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Stats Card */}
-        <Card className="card-shadow border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden">
-          <CardHeader className="pb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-primary" />
+      {/* Main Dashboard Content */}
+      <main className="container mx-auto px-6 py-8">
+        {/* Hero Stats Section */}
+        <motion.div
+          className={`mb-8 p-8 rounded-3xl ${currentDept.gradient} text-white luxury-shadow overflow-hidden relative`}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="absolute inset-0 shimmer opacity-20"></div>
+          <div className="relative z-10">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+                <currentDept.icon className="w-8 h-8" />
               </div>
               <div>
-                <CardTitle className="text-2xl">Quick Stats</CardTitle>
-                <CardDescription className="text-base">Overview of your activity</CardDescription>
+                <h2 className="text-4xl font-bold tracking-tight">{currentDept.name}</h2>
+                <p className="text-white/90 text-lg mt-1">{currentDept.description}</p>
               </div>
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-6 md:grid-cols-3">
-              <div className="p-6 rounded-2xl bg-primary/5 border border-primary/10 hover-lift">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
-                    <Pill className="w-5 h-5 text-primary" />
-                  </div>
-                  <p className="text-sm font-medium text-muted-foreground">Active Prescriptions</p>
-                </div>
-                <p className="text-4xl font-bold tracking-tight">0</p>
+
+            {currentDept.stats && (
+              <div className="grid grid-cols-3 gap-6 mt-8">
+                {currentDept.stats.map((stat, index) => (
+                  <motion.div
+                    key={index}
+                    className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 hover-lift"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <p className="text-white/80 text-sm font-medium mb-2">{stat.label}</p>
+                    <div className="flex items-end gap-2">
+                      <p className="text-3xl font-bold">{stat.value}</p>
+                      {stat.trend && stat.trend !== "stable" && (
+                        <Badge variant="secondary" className="mb-1 bg-white/20 text-white border-none">
+                          {stat.trend}
+                        </Badge>
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
               </div>
-              <div className="p-6 rounded-2xl bg-secondary/5 border border-secondary/10 hover-lift">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 bg-secondary/10 rounded-xl flex items-center justify-center">
-                    <Activity className="w-5 h-5 text-secondary" />
-                  </div>
-                  <p className="text-sm font-medium text-muted-foreground">This Month</p>
+            )}
+          </div>
+        </motion.div>
+
+        {/* Department Tabs */}
+        <Tabs value={selectedDepartment} onValueChange={setSelectedDepartment} className="w-full">
+          <TabsList className="w-full justify-start overflow-x-auto bg-card/80 backdrop-blur-md p-4 rounded-3xl luxury-shadow mb-8 flex-nowrap gap-3">
+            {departments.map((dept) => (
+              <TabsTrigger
+                key={dept.id}
+                value={dept.id}
+                className="flex items-center gap-3 px-8 py-4 rounded-2xl btn-press text-base font-semibold transition-all duration-300 data-[state=active]:gradient-royal data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 data-[state=inactive]:hover:bg-muted/50 data-[state=inactive]:text-foreground whitespace-nowrap cursor-pointer"
+              >
+                <dept.icon className="w-6 h-6" />
+                <span className="text-base">{dept.name}</span>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+
+          {/* Department Content */}
+          {departments.map((dept) => (
+            <TabsContent key={dept.id} value={dept.id} className="mt-0">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {/* Quick Actions Card */}
+                  <Card className="hover-lift card-shadow bg-card/50 backdrop-blur-sm border-border/50">
+                    <CardHeader>
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className={`w-12 h-12 ${dept.color} bg-current/10 rounded-xl flex items-center justify-center`}>
+                          <ClipboardPlus className={`w-6 h-6 ${dept.color}`} />
+                        </div>
+                        <CardTitle className="text-xl">Quick Actions</CardTitle>
+                      </div>
+                      <CardDescription>Common tasks for {dept.name}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <Button variant="outline" className="w-full justify-start btn-press hover-lift">
+                        <UserCheck className="w-4 h-4 mr-2" />
+                        Check In Patient
+                      </Button>
+                      <Button variant="outline" className="w-full justify-start btn-press hover-lift">
+                        <FileText className="w-4 h-4 mr-2" />
+                        View Records
+                      </Button>
+                      <Button variant="outline" className="w-full justify-start btn-press hover-lift">
+                        <Calendar className="w-4 h-4 mr-2" />
+                        Schedule Appointment
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  {/* Active Patients/Tasks */}
+                  <Card className="hover-lift card-shadow bg-card/50 backdrop-blur-sm border-border/50">
+                    <CardHeader>
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className={`w-12 h-12 ${dept.color} bg-current/10 rounded-xl flex items-center justify-center`}>
+                          <Users className={`w-6 h-6 ${dept.color}`} />
+                        </div>
+                        <CardTitle className="text-xl">Active Now</CardTitle>
+                      </div>
+                      <CardDescription>Current patients and activities</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        {[1, 2, 3].map((i) => (
+                          <div key={i} className="flex items-center justify-between p-3 bg-muted/30 rounded-xl hover-lift cursor-pointer">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 bg-gradient-royal rounded-full flex items-center justify-center text-white font-semibold">
+                                P{i}
+                              </div>
+                              <div>
+                                <p className="font-medium text-sm">Patient {i}</p>
+                                <p className="text-xs text-muted-foreground">In progress</p>
+                              </div>
+                            </div>
+                            <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Notifications/Alerts */}
+                  <Card className="hover-lift card-shadow bg-card/50 backdrop-blur-sm border-border/50">
+                    <CardHeader>
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className={`w-12 h-12 ${dept.color} bg-current/10 rounded-xl flex items-center justify-center`}>
+                          <AlertCircle className={`w-6 h-6 ${dept.color}`} />
+                        </div>
+                        <CardTitle className="text-xl">Alerts</CardTitle>
+                      </div>
+                      <CardDescription>Important notifications</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div className="p-3 bg-secondary/10 border border-secondary/20 rounded-xl">
+                          <div className="flex items-start gap-2">
+                            <CheckCircle2 className="w-4 h-4 text-secondary mt-0.5" />
+                            <div>
+                              <p className="text-sm font-medium">All systems operational</p>
+                              <p className="text-xs text-muted-foreground">Last checked: 2 min ago</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="p-3 bg-accent/10 border border-accent/20 rounded-xl">
+                          <div className="flex items-start gap-2">
+                            <Clock className="w-4 h-4 text-accent mt-0.5" />
+                            <div>
+                              <p className="text-sm font-medium">3 pending reviews</p>
+                              <p className="text-xs text-muted-foreground">Requires attention</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
-                <p className="text-4xl font-bold tracking-tight">0</p>
-              </div>
-              <div className="p-6 rounded-2xl bg-amber-500/5 border border-amber-500/10 hover-lift">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 bg-amber-500/10 rounded-xl flex items-center justify-center">
-                    <Clock className="w-5 h-5 text-amber-600" />
-                  </div>
-                  <p className="text-sm font-medium text-muted-foreground">Pending Actions</p>
-                </div>
-                <p className="text-4xl font-bold tracking-tight">0</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+
+                {/* Coming Soon Features */}
+                <Card className="mt-6 luxury-shadow bg-gradient-to-br from-card/80 to-card/50 backdrop-blur-sm border-border/50">
+                  <CardHeader>
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-gradient-gold rounded-xl flex items-center justify-center">
+                        <Sparkles className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-2xl">Coming Soon to {dept.name}</CardTitle>
+                        <CardDescription className="text-base">Exciting features in development</CardDescription>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-muted-foreground">
+                      Full {dept.name.toLowerCase()} management features including patient tracking,
+                      digital workflows, real-time monitoring, and comprehensive reporting are currently
+                      being developed. Stay tuned for updates!
+                    </p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </TabsContent>
+          ))}
+        </Tabs>
       </main>
     </div>
   );
