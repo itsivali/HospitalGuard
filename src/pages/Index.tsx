@@ -216,31 +216,7 @@ const Index = () => {
             </Card>
           </motion.div>
 
-          {/* Department Grid */}
-          <motion.div
-            className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto mt-12"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-          >
-            {departments.map((dept, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3, delay: 0.4 + index * 0.05 }}
-              >
-                <Card className="hover-lift card-shadow cursor-pointer bg-card/50 backdrop-blur-sm border-border/50 group">
-                  <CardContent className="flex flex-col items-center justify-center p-6 gap-3">
-                    <div className={`w-12 h-12 ${dept.color === 'text-destructive' ? 'bg-destructive/10' : dept.color === 'text-coral' ? 'bg-coral/10' : dept.color === 'text-teal' ? 'bg-teal/10' : dept.color === 'text-tertiary' ? 'bg-tertiary/10' : dept.color === 'text-secondary' ? 'bg-secondary/10' : dept.color === 'text-accent' ? 'bg-accent/10' : 'bg-primary/10'} rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-                      <dept.icon className={`w-6 h-6 ${dept.color}`} />
-                    </div>
-                    <span className="text-sm font-semibold text-center">{dept.name}</span>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </motion.div>
+       
         </div>
       </section>
 
