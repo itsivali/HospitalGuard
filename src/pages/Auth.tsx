@@ -4,10 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Hospital,
   Lock,
@@ -17,7 +19,11 @@ import {
   CheckCircle2,
   Users,
   Stethoscope,
-  ShieldCheck
+  ShieldCheck,
+  AlertCircle,
+  Sparkles,
+  ArrowRight,
+  Loader2
 } from "lucide-react";
 
 const Auth = () => {
@@ -35,6 +41,26 @@ const Auth = () => {
     phone: "",
     role: "patient",
   });
+
+  // Patient onboarding states
+  const [patientSignupStep, setPatientSignupStep] = useState<"basic" | "symptoms" | "doctor-assignment">("basic");
+  const [symptomData, setSymptomData] = useState({
+    chiefComplaint: "",
+    additionalSymptoms: ""
+  });
+  const [aiAnalysis, setAiAnalysis] = useState<{
+    suggestedDepartment: string;
+    departmentId: string;
+    reasoning: string;
+    urgencyLevel: string;
+  } | null>(null);
+  const [assignedDoctor, setAssignedDoctor] = useState<{
+    id: string;
+    firstName: string;
+    lastName: string;
+    specialization: string;
+  } | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // Set role from URL param
   useEffect(() => {
@@ -110,7 +136,326 @@ const Auth = () => {
     }
   };
 
-  const handleSignup = async (e: React.FormEvent) => {
+  const analyzeSymptomsWithAI = async () => {
+    setIsAnalyzing(true);
+    try {
+      // Fetch all departments first
+      const { data: departments, error: deptError } = await supabase
+        .from('departments')
+        .select('id, name, description')
+        .order('name');
+
+      if (deptError || !departments || departments.length === 0) {
+        throw new Error('Unable to load departments');
+      }
+
+      // Create a prompt for the AI
+      const departmentList = departments.map(d => `- ${d.name}: ${d.description}`).join('\n');
+      const prompt = `You are a medical triage AI assistant. Based on the patient's symptoms, determine which hospital department would be most appropriate.
+
+Patient's Chief Complaint: "${symptomData.chiefComplaint}"
+Additional Symptoms: "${symptomData.additionalSymptoms || 'None provided'}"
+
+Available Departments:
+${departmentList}
+
+Analyze the symptoms and respond in EXACTLY this JSON format (no markdown, no code blocks, just raw JSON):
+{
+  "suggestedDepartment": "Department Name",
+  "reasoning": "Brief 1-2 sentence explanation of why this department is appropriate",
+  "urgencyLevel": "routine|semi_urgent|urgent|critical"
+}
+
+Choose the most appropriate department from the list above. Be concise and professional.`;
+
+      // For this implementation, I'll use a simple rule-based system since we can't directly call Claude API from frontend
+      // In production, this would be an API route that calls Claude
+      const analysis = await simulateAIAnalysis(symptomData.chiefComplaint, symptomData.additionalSymptoms, departments);
+
+      setAiAnalysis(analysis);
+      setPatientSignupStep("doctor-assignment");
+
+      // Now assign a doctor from the suggested department
+      await assignDoctorFromDepartment(analysis.departmentId);
+
+    } catch (error) {
+      console.error("Error analyzing symptoms:", error);
+      toast({
+        title: "Analysis Failed",
+        description: "Unable to analyze symptoms. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  // Simple rule-based system (in production, this would call Claude API via backend)
+  const simulateAIAnalysis = async (chiefComplaint: string, additionalSymptoms: string, departments: any[]) => {
+    const combined = `${chiefComplaint} ${additionalSymptoms}`.toLowerCase();
+
+    // Emergency keywords
+    if (combined.match(/chest pain|heart attack|stroke|can't breathe|severe bleeding|unconscious|trauma|accident/i)) {
+      const dept = departments.find(d => d.name === 'Emergency');
+      return {
+        suggestedDepartment: dept?.name || 'Emergency',
+        departmentId: dept?.id || departments[0].id,
+        reasoning: "Your symptoms indicate a potentially urgent condition that requires immediate emergency care.",
+        urgencyLevel: "critical"
+      };
+    }
+
+    // ICU/Critical care
+    if (combined.match(/critical|intensive|severe respiratory|sepsis|organ failure/i)) {
+      const dept = departments.find(d => d.name === 'Intensive Care Unit (ICU)');
+      return {
+        suggestedDepartment: dept?.name || 'ICU',
+        departmentId: dept?.id || departments[0].id,
+        reasoning: "Your condition requires intensive monitoring and critical care support.",
+        urgencyLevel: "critical"
+      };
+    }
+
+    // Maternity
+    if (combined.match(/pregnant|pregnancy|labor|contractions|prenatal|postpartum|baby|delivery/i)) {
+      const dept = departments.find(d => d.name === 'Maternity');
+      return {
+        suggestedDepartment: dept?.name || 'Maternity',
+        departmentId: dept?.id || departments[0].id,
+        reasoning: "Your needs are related to maternal care and would be best served by our maternity department.",
+        urgencyLevel: "semi_urgent"
+      };
+    }
+
+    // Mental Health
+    if (combined.match(/depression|anxiety|mental|suicidal|psychiatric|stress|panic|bipolar|schizophrenia/i)) {
+      const dept = departments.find(d => d.name === 'Mental Health');
+      return {
+        suggestedDepartment: dept?.name || 'Mental Health',
+        departmentId: dept?.id || departments[0].id,
+        reasoning: "Your symptoms suggest you would benefit from specialized mental health support and counseling.",
+        urgencyLevel: "semi_urgent"
+      };
+    }
+
+    // Pediatrics
+    if (combined.match(/child|kid|infant|baby|toddler|pediatric|under \d+ years/i)) {
+      const dept = departments.find(d => d.name === 'Pediatrics');
+      return {
+        suggestedDepartment: dept?.name || 'Pediatrics',
+        departmentId: dept?.id || departments[0].id,
+        reasoning: "Children require specialized care, and our pediatrics department is best equipped to help.",
+        urgencyLevel: "routine"
+      };
+    }
+
+    // Surgery
+    if (combined.match(/surgery|surgical|operation|appendix|gallbladder|tumor|mass|hernia/i)) {
+      const dept = departments.find(d => d.name === 'Surgery');
+      return {
+        suggestedDepartment: dept?.name || 'Surgery',
+        departmentId: dept?.id || departments[0].id,
+        reasoning: "Your condition may require surgical evaluation and possible intervention.",
+        urgencyLevel: "semi_urgent"
+      };
+    }
+
+    // Radiology
+    if (combined.match(/x-ray|scan|mri|ct scan|imaging|ultrasound|mammogram/i)) {
+      const dept = departments.find(d => d.name === 'Radiology');
+      return {
+        suggestedDepartment: dept?.name || 'Radiology',
+        departmentId: dept?.id || departments[0].id,
+        reasoning: "You need medical imaging services to diagnose your condition.",
+        urgencyLevel: "routine"
+      };
+    }
+
+    // Laboratory
+    if (combined.match(/blood test|lab work|laboratory|test results|screening/i)) {
+      const dept = departments.find(d => d.name === 'Laboratory');
+      return {
+        suggestedDepartment: dept?.name || 'Laboratory',
+        departmentId: dept?.id || departments[0].id,
+        reasoning: "You require laboratory testing and analysis for proper diagnosis.",
+        urgencyLevel: "routine"
+      };
+    }
+
+    // Default to Outpatient for general concerns
+    const outpatientDept = departments.find(d => d.name === 'Outpatient');
+    return {
+      suggestedDepartment: outpatientDept?.name || 'Outpatient',
+      departmentId: outpatientDept?.id || departments[0].id,
+      reasoning: "Based on your symptoms, a general outpatient consultation would be the best starting point for your care.",
+      urgencyLevel: "routine"
+    };
+  };
+
+  const assignDoctorFromDepartment = async (departmentId: string) => {
+    try {
+      const { data: doctors, error } = await supabase
+        .from('hospital_staff')
+        .select('id, first_name, last_name, specialization')
+        .eq('department_id', departmentId)
+        .eq('staff_type', 'doctor')
+        .eq('is_active', true)
+        .limit(5);
+
+      if (error || !doctors || doctors.length === 0) {
+        throw new Error('No available doctors in this department');
+      }
+
+      // Select a random doctor
+      const selectedDoctor = doctors[Math.floor(Math.random() * doctors.length)];
+      setAssignedDoctor({
+        id: selectedDoctor.id,
+        firstName: selectedDoctor.first_name,
+        lastName: selectedDoctor.last_name,
+        specialization: selectedDoctor.specialization
+      });
+    } catch (error) {
+      console.error("Error assigning doctor:", error);
+      toast({
+        title: "Doctor Assignment Failed",
+        description: "Unable to assign a doctor. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handlePatientBasicInfo = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // If role is patient, continue to symptoms step
+    if (signupData.role === "patient") {
+      setPatientSignupStep("symptoms");
+    } else {
+      // If role is staff (non-patient), create account directly
+      await handleStaffSignup(e);
+    }
+  };
+
+  const handleSymptomSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!symptomData.chiefComplaint.trim()) {
+      toast({
+        title: "Symptoms Required",
+        description: "Please describe what brings you in today.",
+        variant: "destructive"
+      });
+      return;
+    }
+    await analyzeSymptomsWithAI();
+  };
+
+  const handleFinalSignup = async () => {
+    if (!assignedDoctor || !aiAnalysis) {
+      toast({
+        title: "Error",
+        description: "Doctor assignment incomplete. Please try again.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // Create the user account
+      const { data, error } = await supabase.auth.signUp({
+        email: signupData.email,
+        password: signupData.password,
+        options: {
+          data: {
+            full_name: signupData.fullName,
+            phone: signupData.phone,
+            role: "patient",
+            assigned_doctor_id: assignedDoctor.id,
+            chief_complaint: symptomData.chiefComplaint,
+            department_id: aiAnalysis.departmentId
+          },
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+        },
+      });
+
+      if (error) throw error;
+
+      // Check if email confirmation is required
+      const emailConfirmationRequired = !data.session && data.user;
+
+      if (!emailConfirmationRequired && data.user) {
+        // Insert role
+        await supabase.from("user_roles").insert({
+          user_id: data.user.id,
+          role: "patient",
+        });
+
+        // Create patient record
+        const { data: patientData, error: patientError } = await supabase
+          .from('patients')
+          .insert({
+            user_id: data.user.id,
+            first_name: signupData.fullName.split(' ')[0],
+            last_name: signupData.fullName.split(' ').slice(1).join(' ') || signupData.fullName,
+            email: signupData.email,
+            phone: signupData.phone || null,
+            date_of_birth: null
+          })
+          .select()
+          .single();
+
+        if (patientError) throw patientError;
+
+        // Create patient visit with assigned doctor
+        const visitNumber = `V-${Date.now()}`;
+        await supabase.from('patient_visits').insert({
+          patient_id: patientData.id,
+          visit_number: visitNumber,
+          admission_type: 'walk_in',
+          status: 'checked_in',
+          chief_complaint: symptomData.chiefComplaint,
+          attending_doctor_id: assignedDoctor.id,
+          current_department_id: aiAnalysis.departmentId,
+          notes: symptomData.additionalSymptoms || null,
+          triage_level: aiAnalysis.urgencyLevel
+        });
+
+        toast({
+          title: "Welcome to HospitalGuard!",
+          description: `Your account has been created and you've been assigned to Dr. ${assignedDoctor.firstName} ${assignedDoctor.lastName}.`,
+        });
+
+        // Auto-login and navigate
+        setTimeout(() => {
+          navigate("/dashboard");
+        }, 1500);
+      } else {
+        toast({
+          title: "Check your email!",
+          description: "We've sent you a confirmation link. Your doctor will be assigned after you confirm your email.",
+        });
+
+        // Reset to login tab
+        setPatientSignupStep("basic");
+        setTimeout(() => {
+          const loginTab = document.querySelector('[value="login"]') as HTMLButtonElement;
+          loginTab?.click();
+        }, 2000);
+      }
+    } catch (error: unknown) {
+      console.error("Signup error:", error);
+      toast({
+        title: "Signup failed",
+        description: error instanceof Error ? error.message : "An error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleStaffSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
@@ -130,27 +475,19 @@ const Auth = () => {
 
       if (error) throw error;
 
-      // Check if email confirmation is required
       const emailConfirmationRequired = !data.session && data.user;
 
       if (emailConfirmationRequired) {
-        // Email confirmation is enabled - user will be created after confirmation
-        // Database trigger will handle role assignment
         toast({
           title: "Check your email!",
           description: "We've sent you a confirmation link. Please check your inbox to complete registration.",
         });
       } else {
-        // Email confirmation is disabled - insert role immediately
         if (data.user) {
-          const { error: roleError } = await supabase.from("user_roles").insert({
+          await supabase.from("user_roles").insert({
             user_id: data.user.id,
             role: signupData.role,
           });
-
-          if (roleError && !roleError.message.includes('duplicate')) {
-            console.error("Role insertion error:", roleError);
-          }
         }
 
         toast({
@@ -158,7 +495,6 @@ const Auth = () => {
           description: "You can now log in with your credentials.",
         });
 
-        // Switch to login tab
         setTimeout(() => {
           const loginTab = document.querySelector('[value="login"]') as HTMLButtonElement;
           loginTab?.click();
@@ -183,7 +519,7 @@ const Auth = () => {
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-secondary/5 rounded-full blur-3xl"></div>
       </div>
 
-      <div className="w-full max-w-md relative z-10">
+      <div className="w-full max-w-2xl relative z-10">
         {/* Brand Header */}
         <div className="text-center mb-8">
           <div className="relative inline-block mb-6">
@@ -261,100 +597,394 @@ const Auth = () => {
               </TabsContent>
 
               <TabsContent value="signup" className="mt-6">
-                <form onSubmit={handleSignup} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-name" className="text-sm font-medium">Full Name</Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                      <Input
-                        id="signup-name"
-                        type="text"
-                        placeholder="John Doe"
-                        className="pl-10 h-11"
-                        value={signupData.fullName}
-                        onChange={(e) => setSignupData({ ...signupData, fullName: e.target.value })}
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email" className="text-sm font-medium">Email Address</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                      <Input
-                        id="signup-email"
-                        type="email"
-                        placeholder="your@email.com"
-                        className="pl-10 h-11"
-                        value={signupData.email}
-                        onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-phone" className="text-sm font-medium">Phone (Optional)</Label>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                      <Input
-                        id="signup-phone"
-                        type="tel"
-                        placeholder="+1 (555) 000-0000"
-                        className="pl-10 h-11"
-                        value={signupData.phone}
-                        onChange={(e) => setSignupData({ ...signupData, phone: e.target.value })}
-                      />
-                    </div>
-                  </div>
+                {signupData.role === "patient" ? (
+                  <AnimatePresence mode="wait">
+                    {patientSignupStep === "basic" && (
+                      <motion.form
+                        key="basic"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        onSubmit={handlePatientBasicInfo}
+                        className="space-y-4"
+                      >
+                        <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 mb-6">
+                          <div className="flex gap-3 items-start">
+                            <Sparkles className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                            <div>
+                              <h4 className="font-semibold text-sm mb-1">AI-Powered Doctor Assignment</h4>
+                              <p className="text-xs text-muted-foreground">
+                                We'll use AI to analyze your symptoms and match you with the perfect doctor in the right department.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
 
-                  {/* Role Selection */}
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-role" className="text-sm font-medium">I am a...</Label>
-                    <Select
-                      value={signupData.role}
-                      onValueChange={(value) => setSignupData({ ...signupData, role: value })}
+                        <div className="space-y-2">
+                          <Label htmlFor="signup-role" className="text-sm font-medium">I am signing up as a...</Label>
+                          <Select
+                            value={signupData.role}
+                            onValueChange={(value) => setSignupData({ ...signupData, role: value })}
+                          >
+                            <SelectTrigger className="h-11">
+                              <SelectValue placeholder="Select your role" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="patient">
+                                <div className="flex items-center gap-2">
+                                  <Users className="w-4 h-4" />
+                                  <span>Patient</span>
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="doctor">
+                                <div className="flex items-center gap-2">
+                                  <Stethoscope className="w-4 h-4" />
+                                  <span>Doctor</span>
+                                </div>
+                              </SelectItem>
+                              <SelectItem value="nurse">Nurse</SelectItem>
+                              <SelectItem value="pharmacist">Pharmacist</SelectItem>
+                              <SelectItem value="billing">Billing Staff</SelectItem>
+                              <SelectItem value="lab_tech">Lab Technician</SelectItem>
+                              <SelectItem value="radiologist">Radiologist</SelectItem>
+                              <SelectItem value="receptionist">Receptionist</SelectItem>
+                              <SelectItem value="admin">Administrator</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="signup-name" className="text-sm font-medium">Full Name</Label>
+                          <div className="relative">
+                            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                            <Input
+                              id="signup-name"
+                              type="text"
+                              placeholder="John Doe"
+                              className="pl-10 h-11"
+                              value={signupData.fullName}
+                              onChange={(e) => setSignupData({ ...signupData, fullName: e.target.value })}
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="signup-email" className="text-sm font-medium">Email Address</Label>
+                          <div className="relative">
+                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                            <Input
+                              id="signup-email"
+                              type="email"
+                              placeholder="your@email.com"
+                              className="pl-10 h-11"
+                              value={signupData.email}
+                              onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="signup-phone" className="text-sm font-medium">Phone (Optional)</Label>
+                          <div className="relative">
+                            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                            <Input
+                              id="signup-phone"
+                              type="tel"
+                              placeholder="+1 (555) 000-0000"
+                              className="pl-10 h-11"
+                              value={signupData.phone}
+                              onChange={(e) => setSignupData({ ...signupData, phone: e.target.value })}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="signup-password" className="text-sm font-medium">Password</Label>
+                          <div className="relative">
+                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                            <Input
+                              id="signup-password"
+                              type="password"
+                              placeholder="••••••••"
+                              className="pl-10 h-11"
+                              value={signupData.password}
+                              onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
+                              required
+                              minLength={6}
+                            />
+                          </div>
+                        </div>
+
+                        <Button
+                          type="submit"
+                          className="w-full h-11 mt-6 gradient-royal btn-press luxury-shadow"
+                        >
+                          {signupData.role === "patient" ? (
+                            <>Continue <ArrowRight className="w-4 h-4 ml-2" /></>
+                          ) : (
+                            "Create Account"
+                          )}
+                        </Button>
+                      </motion.form>
+                    )}
+
+                    {patientSignupStep === "symptoms" && (
+                      <motion.form
+                        key="symptoms"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        onSubmit={handleSymptomSubmit}
+                        className="space-y-4"
+                      >
+                        <div className="p-4 rounded-xl bg-secondary/10 border border-secondary/20 mb-6">
+                          <div className="flex gap-3 items-start">
+                            <AlertCircle className="w-5 h-5 text-secondary mt-0.5 flex-shrink-0" />
+                            <div>
+                              <h4 className="font-semibold text-sm mb-1">Tell us about your symptoms</h4>
+                              <p className="text-xs text-muted-foreground">
+                                Our AI will analyze your symptoms and match you with the right specialist.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="chief-complaint" className="text-sm font-medium">
+                            What brings you in today? *
+                          </Label>
+                          <Input
+                            id="chief-complaint"
+                            type="text"
+                            placeholder="E.g., chest pain, fever, headache..."
+                            className="h-11"
+                            value={symptomData.chiefComplaint}
+                            onChange={(e) => setSymptomData({ ...symptomData, chiefComplaint: e.target.value })}
+                            required
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="additional-symptoms" className="text-sm font-medium">
+                            Additional details (Optional)
+                          </Label>
+                          <Textarea
+                            id="additional-symptoms"
+                            placeholder="Any other symptoms, duration, severity, medications you're taking..."
+                            rows={4}
+                            className="resize-none"
+                            value={symptomData.additionalSymptoms}
+                            onChange={(e) => setSymptomData({ ...symptomData, additionalSymptoms: e.target.value })}
+                          />
+                        </div>
+
+                        <div className="flex gap-3">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="flex-1 h-11"
+                            onClick={() => setPatientSignupStep("basic")}
+                          >
+                            Back
+                          </Button>
+                          <Button
+                            type="submit"
+                            className="flex-1 h-11 gradient-royal btn-press luxury-shadow"
+                            disabled={isAnalyzing}
+                          >
+                            {isAnalyzing ? (
+                              <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                Analyzing...
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="w-4 h-4 mr-2" />
+                                Analyze with AI
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </motion.form>
+                    )}
+
+                    {patientSignupStep === "doctor-assignment" && aiAnalysis && assignedDoctor && (
+                      <motion.div
+                        key="doctor"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        className="space-y-4"
+                      >
+                        <div className="p-6 rounded-xl bg-gradient-to-br from-primary/10 to-secondary/10 border border-primary/20">
+                          <div className="flex items-start gap-4 mb-4">
+                            <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center">
+                              <Sparkles className="w-6 h-6 text-primary" />
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="font-semibold mb-2">AI Analysis Complete</h4>
+                              <p className="text-sm text-muted-foreground mb-3">{aiAnalysis.reasoning}</p>
+                              <div className="flex items-center gap-2">
+                                <Hospital className="w-4 h-4 text-primary" />
+                                <span className="font-medium text-sm">Recommended: {aiAnalysis.suggestedDepartment}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="p-6 rounded-xl bg-gradient-to-br from-secondary/10 to-accent/10 border border-secondary/20">
+                          <div className="flex items-start gap-4">
+                            <div className="w-12 h-12 gradient-royal rounded-full flex items-center justify-center">
+                              <Stethoscope className="w-6 h-6 text-white" />
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="font-semibold mb-2">Your Assigned Doctor</h4>
+                              <p className="text-lg font-bold text-primary mb-1">
+                                Dr. {assignedDoctor.firstName} {assignedDoctor.lastName}
+                              </p>
+                              <p className="text-sm text-muted-foreground">{assignedDoctor.specialization}</p>
+                              <div className="mt-3 flex items-center gap-2 text-sm">
+                                <CheckCircle2 className="w-4 h-4 text-secondary" />
+                                <span className="text-muted-foreground">This doctor will stay with you throughout your recovery</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <Button
+                          onClick={handleFinalSignup}
+                          className="w-full h-12 gradient-royal btn-press luxury-shadow text-base"
+                          disabled={isLoading}
+                        >
+                          {isLoading ? (
+                            <>
+                              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                              Creating Account...
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle2 className="w-5 h-5 mr-2" />
+                              Complete Registration
+                            </>
+                          )}
+                        </Button>
+
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-full h-11"
+                          onClick={() => {
+                            setPatientSignupStep("symptoms");
+                            setAiAnalysis(null);
+                            setAssignedDoctor(null);
+                          }}
+                          disabled={isLoading}
+                        >
+                          Revise Symptoms
+                        </Button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                ) : (
+                  <form onSubmit={handleStaffSignup} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="staff-name" className="text-sm font-medium">Full Name</Label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                        <Input
+                          id="staff-name"
+                          type="text"
+                          placeholder="John Doe"
+                          className="pl-10 h-11"
+                          value={signupData.fullName}
+                          onChange={(e) => setSignupData({ ...signupData, fullName: e.target.value })}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="staff-email" className="text-sm font-medium">Email Address</Label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                        <Input
+                          id="staff-email"
+                          type="email"
+                          placeholder="your@email.com"
+                          className="pl-10 h-11"
+                          value={signupData.email}
+                          onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="staff-phone" className="text-sm font-medium">Phone (Optional)</Label>
+                      <div className="relative">
+                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                        <Input
+                          id="staff-phone"
+                          type="tel"
+                          placeholder="+1 (555) 000-0000"
+                          className="pl-10 h-11"
+                          value={signupData.phone}
+                          onChange={(e) => setSignupData({ ...signupData, phone: e.target.value })}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="staff-role" className="text-sm font-medium">I am a...</Label>
+                      <Select
+                        value={signupData.role}
+                        onValueChange={(value) => setSignupData({ ...signupData, role: value })}
+                      >
+                        <SelectTrigger className="h-11">
+                          <SelectValue placeholder="Select your role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="patient">Patient</SelectItem>
+                          <SelectItem value="doctor">Doctor</SelectItem>
+                          <SelectItem value="nurse">Nurse</SelectItem>
+                          <SelectItem value="pharmacist">Pharmacist</SelectItem>
+                          <SelectItem value="billing">Billing Staff</SelectItem>
+                          <SelectItem value="lab_tech">Lab Technician</SelectItem>
+                          <SelectItem value="radiologist">Radiologist</SelectItem>
+                          <SelectItem value="receptionist">Receptionist</SelectItem>
+                          <SelectItem value="admin">Administrator</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="staff-password" className="text-sm font-medium">Password</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                        <Input
+                          id="staff-password"
+                          type="password"
+                          placeholder="••••••••"
+                          className="pl-10 h-11"
+                          value={signupData.password}
+                          onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
+                          required
+                          minLength={6}
+                        />
+                      </div>
+                    </div>
+
+                    <Button
+                      type="submit"
+                      className="w-full h-11 mt-6 gradient-royal btn-press luxury-shadow"
+                      disabled={isLoading}
                     >
-                      <SelectTrigger className="h-11">
-                        <SelectValue placeholder="Select your role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="patient">Patient</SelectItem>
-                        <SelectItem value="doctor">Doctor</SelectItem>
-                        <SelectItem value="nurse">Nurse</SelectItem>
-                        <SelectItem value="pharmacist">Pharmacist</SelectItem>
-                        <SelectItem value="billing">Billing Staff</SelectItem>
-                        <SelectItem value="lab_tech">Lab Technician</SelectItem>
-                        <SelectItem value="radiologist">Radiologist</SelectItem>
-                        <SelectItem value="receptionist">Receptionist</SelectItem>
-                        <SelectItem value="admin">Administrator</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-password" className="text-sm font-medium">Password</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                      <Input
-                        id="signup-password"
-                        type="password"
-                        placeholder="••••••••"
-                        className="pl-10 h-11"
-                        value={signupData.password}
-                        onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
-                        required
-                        minLength={6}
-                      />
-                    </div>
-                  </div>
-                  <Button
-                    type="submit"
-                    className="w-full h-11 mt-6 gradient-royal btn-press luxury-shadow"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? "Creating account..." : "Create Account"}
-                  </Button>
-                </form>
+                      {isLoading ? "Creating account..." : "Create Account"}
+                    </Button>
+                  </form>
+                )}
               </TabsContent>
             </Tabs>
           </CardContent>

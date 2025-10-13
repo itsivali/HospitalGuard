@@ -10,7 +10,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { motion } from "framer-motion";
+import { format } from "date-fns";
 import {
   Activity,
   Calendar,
@@ -44,6 +47,10 @@ const PatientDashboard = () => {
   const [selectedLabOrder, setSelectedLabOrder] = useState<any>(null);
   const [departments, setDepartments] = useState<any[]>([]);
   const [doctors, setDoctors] = useState<any[]>([]);
+  const [loadingDepartments, setLoadingDepartments] = useState(false);
+  const [loadingDoctors, setLoadingDoctors] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>();
+  const [selectedTime, setSelectedTime] = useState('09:00');
   const [bookingForm, setBookingForm] = useState({
     department_id: '',
     doctor_id: '',
@@ -51,6 +58,13 @@ const PatientDashboard = () => {
     scheduled_time: '',
     reason: ''
   });
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingForm, setOnboardingForm] = useState({
+    chief_complaint: '',
+    symptoms: '',
+    department_id: ''
+  });
+  const [assigningDoctor, setAssigningDoctor] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -84,6 +98,12 @@ const PatientDashboard = () => {
     }
   }, [bookingForm.department_id]);
 
+  useEffect(() => {
+    if (showOnboarding) {
+      fetchDepartments();
+    }
+  }, [showOnboarding]);
+
   const fetchPatientData = async (userId: string) => {
     try {
       // Fetch patient record
@@ -95,6 +115,8 @@ const PatientDashboard = () => {
 
       if (patientError) throw patientError;
       setPatientData(patient);
+
+      // Onboarding is now handled during signup, so no need to check here
 
       if (patient) {
         // Fetch appointments
@@ -163,35 +185,85 @@ const PatientDashboard = () => {
   };
 
   const fetchDepartments = async () => {
-    const { data } = await supabase
-      .from('departments')
-      .select('id, name')
-      .order('name');
-    setDepartments(data || []);
+    try {
+      setLoadingDepartments(true);
+      const { data, error } = await supabase
+        .from('departments')
+        .select('id, name')
+        .order('name');
+
+      if (error) {
+        console.error("Error fetching departments:", error);
+        toast({
+          title: "Info",
+          description: "Using default departments list",
+        });
+        // Use hardcoded departments if fetch fails
+        setDepartments([
+          { id: 'emergency', name: 'Emergency' },
+          { id: 'outpatient', name: 'Outpatient' },
+          { id: 'cardiology', name: 'Cardiology' },
+          { id: 'laboratory', name: 'Laboratory' },
+          { id: 'radiology', name: 'Radiology' },
+          { id: 'pharmacy', name: 'Pharmacy' },
+        ]);
+      } else {
+        setDepartments(data || []);
+      }
+    } catch (error) {
+      console.error("Exception fetching departments:", error);
+      setDepartments([
+        { id: 'emergency', name: 'Emergency' },
+        { id: 'outpatient', name: 'Outpatient' },
+        { id: 'cardiology', name: 'Cardiology' },
+        { id: 'laboratory', name: 'Laboratory' },
+        { id: 'radiology', name: 'Radiology' },
+        { id: 'pharmacy', name: 'Pharmacy' },
+      ]);
+    } finally {
+      setLoadingDepartments(false);
+    }
   };
 
   const fetchDoctors = async (departmentId: string) => {
-    const { data } = await supabase
-      .from('hospital_staff')
-      .select('id, first_name, last_name, specialization')
-      .eq('department_id', departmentId)
-      .eq('staff_type', 'doctor')
-      .eq('is_active', true)
-      .order('last_name');
-    setDoctors(data || []);
+    try {
+      setLoadingDoctors(true);
+      const { data, error } = await supabase
+        .from('hospital_staff')
+        .select('id, first_name, last_name, specialization')
+        .eq('department_id', departmentId)
+        .eq('staff_type', 'doctor')
+        .eq('is_active', true)
+        .order('last_name');
+
+      if (error) {
+        console.error("Error fetching doctors:", error);
+      }
+      setDoctors(data || []);
+    } catch (error) {
+      console.error("Exception fetching doctors:", error);
+      setDoctors([]);
+    } finally {
+      setLoadingDoctors(false);
+    }
   };
 
   const handleBookAppointment = async () => {
-    if (!patientData || !bookingForm.scheduled_time) {
+    if (!patientData || !selectedDate || !selectedTime || !bookingForm.department_id) {
       toast({
         title: "Error",
-        description: "Please fill in all required fields",
+        description: "Please fill in all required fields (Department, Date, and Time)",
         variant: "destructive"
       });
       return;
     }
 
     try {
+      // Combine date and time
+      const [hours, minutes] = selectedTime.split(':');
+      const scheduledDateTime = new Date(selectedDate);
+      scheduledDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+
       const appointmentNumber = `APT-${Date.now()}`;
 
       const { error } = await supabase
@@ -202,7 +274,7 @@ const PatientDashboard = () => {
           doctor_id: bookingForm.doctor_id || null,
           department_id: bookingForm.department_id || null,
           appointment_type: bookingForm.appointment_type,
-          scheduled_time: bookingForm.scheduled_time,
+          scheduled_time: scheduledDateTime.toISOString(),
           reason: bookingForm.reason,
           status: 'scheduled'
         });
@@ -215,6 +287,8 @@ const PatientDashboard = () => {
       });
 
       setShowBookAppointment(false);
+      setSelectedDate(undefined);
+      setSelectedTime('09:00');
       setBookingForm({
         department_id: '',
         doctor_id: '',
@@ -244,6 +318,80 @@ const PatientDashboard = () => {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/");
+  };
+
+  const handleOnboardingSubmit = async () => {
+    if (!patientData || !onboardingForm.chief_complaint || !onboardingForm.department_id) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      setAssigningDoctor(true);
+
+      // Find an available doctor in the selected department
+      const { data: availableDoctors, error: doctorError } = await supabase
+        .from('hospital_staff')
+        .select('id, first_name, last_name, specialization')
+        .eq('department_id', onboardingForm.department_id)
+        .eq('staff_type', 'doctor')
+        .eq('is_active', true)
+        .order('id'); // Random-ish selection
+
+      if (doctorError || !availableDoctors || availableDoctors.length === 0) {
+        throw new Error('No available doctors in this department');
+      }
+
+      // Select the first available doctor (in production, you'd check their schedule)
+      const assignedDoctor = availableDoctors[0];
+
+      // Create a new visit record for this patient
+      const visitNumber = `V-${Date.now()}`;
+      const { data: newVisit, error: visitError } = await supabase
+        .from('patient_visits')
+        .insert({
+          patient_id: patientData.id,
+          visit_number: visitNumber,
+          admission_type: 'walk_in',
+          status: 'checked_in',
+          chief_complaint: onboardingForm.chief_complaint,
+          attending_doctor_id: assignedDoctor.id,
+          current_department_id: onboardingForm.department_id,
+          notes: onboardingForm.symptoms || null
+        })
+        .select()
+        .single();
+
+      if (visitError) throw visitError;
+
+      toast({
+        title: "Doctor Assigned!",
+        description: `You've been assigned to Dr. ${assignedDoctor.first_name} ${assignedDoctor.last_name} (${assignedDoctor.specialization})`,
+      });
+
+      setShowOnboarding(false);
+      setOnboardingForm({
+        chief_complaint: '',
+        symptoms: '',
+        department_id: ''
+      });
+
+      // Refresh patient data
+      if (user) await fetchPatientData(user.id);
+    } catch (error) {
+      console.error("Error assigning doctor:", error);
+      toast({
+        title: "Error",
+        description: "Failed to assign doctor. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setAssigningDoctor(false);
+    }
   };
 
   if (isLoading) {
@@ -627,105 +775,282 @@ const PatientDashboard = () => {
 
       {/* Book Appointment Modal */}
       <Dialog open={showBookAppointment} onOpenChange={setShowBookAppointment}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-primary" />
-              Book New Appointment
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="space-y-4">
+            <div className="flex items-center justify-center">
+              <div className="relative">
+                <div className="absolute inset-0 bg-primary/30 rounded-full blur-xl"></div>
+                <div className="relative w-16 h-16 gradient-royal rounded-full flex items-center justify-center luxury-shadow">
+                  <Calendar className="w-8 h-8 text-white" />
+                </div>
+              </div>
+            </div>
+            <DialogTitle className="text-center text-2xl font-bold">
+              Book Your Appointment
             </DialogTitle>
-            <DialogDescription>
-              Schedule your next visit with our healthcare professionals
+            <DialogDescription className="text-center">
+              Schedule your visit with our world-class healthcare professionals
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="department">Department</Label>
-              <Select
-                value={bookingForm.department_id}
-                onValueChange={(value) => setBookingForm({ ...bookingForm, department_id: value, doctor_id: '' })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select department" />
-                </SelectTrigger>
-                <SelectContent>
-                  {departments.map((dept) => (
-                    <SelectItem key={dept.id} value={dept.id}>
-                      {dept.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
 
-            {bookingForm.department_id && (
-              <div className="space-y-2">
-                <Label htmlFor="doctor">Doctor (Optional)</Label>
+          <div className="space-y-6 py-6">
+            {/* Department Selection */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-3"
+            >
+              <Label htmlFor="department" className="text-base font-semibold flex items-center gap-2">
+                <Hospital className="w-4 h-4 text-primary" />
+                Department *
+              </Label>
+              {loadingDepartments ? (
+                <div className="p-4 border rounded-xl bg-muted/30 flex items-center justify-center">
+                  <p className="text-sm text-muted-foreground">Loading departments...</p>
+                </div>
+              ) : departments.length === 0 ? (
+                <div className="p-4 border rounded-xl bg-destructive/10 border-destructive/20">
+                  <p className="text-sm text-destructive">No departments available</p>
+                </div>
+              ) : (
                 <Select
-                  value={bookingForm.doctor_id}
-                  onValueChange={(value) => setBookingForm({ ...bookingForm, doctor_id: value })}
+                  value={bookingForm.department_id}
+                  onValueChange={(value) => setBookingForm({ ...bookingForm, department_id: value, doctor_id: '' })}
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select doctor or leave blank" />
+                  <SelectTrigger className="h-12 border-2 hover:border-primary transition-colors">
+                    <SelectValue placeholder="Choose a department" />
                   </SelectTrigger>
                   <SelectContent>
-                    {doctors.map((doctor) => (
-                      <SelectItem key={doctor.id} value={doctor.id}>
-                        Dr. {doctor.first_name} {doctor.last_name}
-                        {doctor.specialization && ` - ${doctor.specialization}`}
+                    {departments.map((dept) => (
+                      <SelectItem key={dept.id} value={dept.id} className="py-3">
+                        <div className="flex items-center gap-2">
+                          <Hospital className="w-4 h-4 text-primary" />
+                          <span className="font-medium">{dept.name}</span>
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
+              )}
+            </motion.div>
+
+            {/* Doctor Selection */}
+            {bookingForm.department_id && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-3"
+              >
+                <Label htmlFor="doctor" className="text-base font-semibold flex items-center gap-2">
+                  <User className="w-4 h-4 text-secondary" />
+                  Preferred Doctor (Optional)
+                </Label>
+                {loadingDoctors ? (
+                  <div className="p-4 border rounded-xl bg-muted/30 flex items-center justify-center">
+                    <p className="text-sm text-muted-foreground">Loading doctors...</p>
+                  </div>
+                ) : (
+                  <Select
+                    value={bookingForm.doctor_id}
+                    onValueChange={(value) => setBookingForm({ ...bookingForm, doctor_id: value })}
+                  >
+                    <SelectTrigger className="h-12 border-2 hover:border-secondary transition-colors">
+                      <SelectValue placeholder="Any available doctor" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {doctors.length === 0 ? (
+                        <div className="p-3 text-sm text-muted-foreground">
+                          No doctors available in this department
+                        </div>
+                      ) : (
+                        doctors.map((doctor) => (
+                          <SelectItem key={doctor.id} value={doctor.id} className="py-3">
+                            <div className="flex flex-col">
+                              <span className="font-medium">
+                                Dr. {doctor.first_name} {doctor.last_name}
+                              </span>
+                              {doctor.specialization && (
+                                <span className="text-xs text-muted-foreground">{doctor.specialization}</span>
+                              )}
+                            </div>
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                )}
+              </motion.div>
             )}
 
-            <div className="space-y-2">
-              <Label htmlFor="type">Appointment Type</Label>
+            {/* Appointment Type */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="space-y-3"
+            >
+              <Label htmlFor="type" className="text-base font-semibold flex items-center gap-2">
+                <Activity className="w-4 h-4 text-accent" />
+                Appointment Type *
+              </Label>
               <Select
                 value={bookingForm.appointment_type}
                 onValueChange={(value) => setBookingForm({ ...bookingForm, appointment_type: value })}
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-12 border-2 hover:border-accent transition-colors">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="consultation">Consultation</SelectItem>
-                  <SelectItem value="follow_up">Follow-up</SelectItem>
-                  <SelectItem value="procedure">Procedure</SelectItem>
-                  <SelectItem value="lab">Lab Work</SelectItem>
-                  <SelectItem value="radiology">Radiology</SelectItem>
+                  <SelectItem value="consultation" className="py-3">
+                    <div className="flex items-center gap-2">
+                      <Activity className="w-4 h-4" />
+                      <span>General Consultation</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="follow_up" className="py-3">
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="w-4 h-4" />
+                      <span>Follow-up Visit</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="procedure" className="py-3">
+                    <div className="flex items-center gap-2">
+                      <Heart className="w-4 h-4" />
+                      <span>Procedure</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="lab" className="py-3">
+                    <div className="flex items-center gap-2">
+                      <FileText className="w-4 h-4" />
+                      <span>Lab Work</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="radiology" className="py-3">
+                    <div className="flex items-center gap-2">
+                      <Activity className="w-4 h-4" />
+                      <span>Radiology/Imaging</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="telemedicine" className="py-3">
+                    <div className="flex items-center gap-2">
+                      <Video className="w-4 h-4" />
+                      <span>Telemedicine (Virtual)</span>
+                    </div>
+                  </SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </motion.div>
 
-            <div className="space-y-2">
-              <Label htmlFor="datetime">Date & Time</Label>
-              <Input
-                id="datetime"
-                type="datetime-local"
-                value={bookingForm.scheduled_time}
-                onChange={(e) => setBookingForm({ ...bookingForm, scheduled_time: e.target.value })}
-                min={new Date().toISOString().slice(0, 16)}
-              />
-            </div>
+            {/* Date & Time */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="space-y-3"
+            >
+              <Label className="text-base font-semibold flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-primary" />
+                Select Date *
+              </Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={`w-full h-12 justify-start text-left font-normal border-2 hover:border-primary transition-colors ${
+                      !selectedDate && "text-muted-foreground"
+                    }`}
+                  >
+                    <Calendar className="mr-2 h-4 w-4" />
+                    {selectedDate ? format(selectedDate, "PPP") : "Pick a date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={setSelectedDate}
+                    disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </motion.div>
 
-            <div className="space-y-2">
-              <Label htmlFor="reason">Reason for Visit</Label>
+            {/* Time Selection */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
+              className="space-y-3"
+            >
+              <Label htmlFor="time" className="text-base font-semibold flex items-center gap-2">
+                <Clock className="w-4 h-4 text-secondary" />
+                Select Time *
+              </Label>
+              <Select value={selectedTime} onValueChange={setSelectedTime}>
+                <SelectTrigger className="h-12 border-2 hover:border-secondary transition-colors">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="max-h-[300px]">
+                  {Array.from({ length: 48 }, (_, i) => {
+                    const hour = Math.floor(i / 2);
+                    const minute = i % 2 === 0 ? '00' : '30';
+                    const time = `${hour.toString().padStart(2, '0')}:${minute}`;
+                    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+                    const period = hour < 12 ? 'AM' : 'PM';
+                    return (
+                      <SelectItem key={time} value={time} className="py-2">
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-4 h-4 text-muted-foreground" />
+                          <span>{`${displayHour}:${minute} ${period}`}</span>
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </motion.div>
+
+            {/* Reason */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="space-y-3"
+            >
+              <Label htmlFor="reason" className="text-base font-semibold flex items-center gap-2">
+                <FileText className="w-4 h-4 text-secondary" />
+                Reason for Visit
+              </Label>
               <Textarea
                 id="reason"
-                placeholder="Briefly describe your reason for the appointment"
+                placeholder="Tell us briefly why you're scheduling this appointment..."
                 value={bookingForm.reason}
                 onChange={(e) => setBookingForm({ ...bookingForm, reason: e.target.value })}
-                rows={3}
+                rows={4}
+                className="border-2 hover:border-secondary transition-colors resize-none"
               />
-            </div>
+              <p className="text-xs text-muted-foreground">
+                This helps us prepare for your visit and provide better care
+              </p>
+            </motion.div>
           </div>
-          <div className="flex gap-3 justify-end">
-            <Button variant="outline" onClick={() => setShowBookAppointment(false)}>
+
+          <div className="flex gap-3 pt-4 border-t">
+            <Button
+              variant="outline"
+              onClick={() => setShowBookAppointment(false)}
+              className="flex-1 h-12 btn-press hover-lift"
+            >
               Cancel
             </Button>
-            <Button onClick={handleBookAppointment} className="gradient-royal btn-press">
-              Book Appointment
+            <Button
+              onClick={handleBookAppointment}
+              className="flex-1 h-12 gradient-royal btn-press hover-lift"
+              disabled={!selectedDate || !selectedTime || !bookingForm.department_id}
+            >
+              <Calendar className="w-4 h-4 mr-2" />
+              Confirm Appointment
             </Button>
           </div>
         </DialogContent>
@@ -828,6 +1153,179 @@ const PatientDashboard = () => {
           <div className="flex justify-end">
             <Button variant="outline" onClick={() => setShowLabResults(false)}>
               Close
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Patient Onboarding Modal */}
+      <Dialog open={showOnboarding} onOpenChange={setShowOnboarding}>
+        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="space-y-4">
+            <div className="flex items-center justify-center">
+              <div className="relative">
+                <div className="absolute inset-0 bg-primary/30 rounded-full blur-2xl"></div>
+                <div className="relative w-20 h-20 gradient-royal rounded-full flex items-center justify-center luxury-shadow">
+                  <Heart className="w-10 h-10 text-white" />
+                </div>
+              </div>
+            </div>
+            <DialogTitle className="text-center text-3xl font-bold">
+              Welcome to HospitalGuard
+            </DialogTitle>
+            <DialogDescription className="text-center text-base">
+              Let's get you connected with the right doctor. Please tell us what brings you in today.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6 py-6">
+            {/* Chief Complaint */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-3"
+            >
+              <Label htmlFor="chief_complaint" className="text-base font-semibold flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-destructive" />
+                What are you experiencing? *
+              </Label>
+              <Input
+                id="chief_complaint"
+                placeholder="E.g., chest pain, fever, headache..."
+                value={onboardingForm.chief_complaint}
+                onChange={(e) => setOnboardingForm({ ...onboardingForm, chief_complaint: e.target.value })}
+                className="h-12 border-2 hover:border-primary transition-colors text-base"
+              />
+              <p className="text-xs text-muted-foreground">
+                Brief description of your main concern
+              </p>
+            </motion.div>
+
+            {/* Department Selection */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="space-y-3"
+            >
+              <Label htmlFor="onboarding_department" className="text-base font-semibold flex items-center gap-2">
+                <Hospital className="w-5 h-5 text-primary" />
+                Which department do you need? *
+              </Label>
+              {loadingDepartments ? (
+                <div className="p-4 border rounded-xl bg-muted/30 flex items-center justify-center">
+                  <p className="text-sm text-muted-foreground">Loading departments...</p>
+                </div>
+              ) : departments.length === 0 ? (
+                <div className="p-4 border rounded-xl bg-destructive/10 border-destructive/20">
+                  <p className="text-sm text-destructive">No departments available</p>
+                </div>
+              ) : (
+                <Select
+                  value={onboardingForm.department_id}
+                  onValueChange={(value) => setOnboardingForm({ ...onboardingForm, department_id: value })}
+                >
+                  <SelectTrigger className="h-12 border-2 hover:border-primary transition-colors">
+                    <SelectValue placeholder="Select a department" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[300px]">
+                    {departments.map((dept) => (
+                      <SelectItem key={dept.id} value={dept.id} className="py-3">
+                        <div className="flex items-center gap-2">
+                          <Hospital className="w-4 h-4 text-primary" />
+                          <span className="font-medium">{dept.name}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Not sure? Choose "Outpatient" or "Emergency" for general care
+              </p>
+            </motion.div>
+
+            {/* Additional Symptoms */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="space-y-3"
+            >
+              <Label htmlFor="symptoms" className="text-base font-semibold flex items-center gap-2">
+                <FileText className="w-5 h-5 text-secondary" />
+                Additional Details (Optional)
+              </Label>
+              <Textarea
+                id="symptoms"
+                placeholder="Any other symptoms or information we should know..."
+                value={onboardingForm.symptoms}
+                onChange={(e) => setOnboardingForm({ ...onboardingForm, symptoms: e.target.value })}
+                rows={4}
+                className="border-2 hover:border-secondary transition-colors resize-none"
+              />
+              <p className="text-xs text-muted-foreground">
+                Additional symptoms, duration, severity, medications you're taking, etc.
+              </p>
+            </motion.div>
+
+            {/* Info Box */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="p-4 rounded-xl bg-primary/10 border-2 border-primary/20"
+            >
+              <div className="flex gap-3">
+                <CheckCircle2 className="w-6 h-6 text-primary flex-shrink-0 mt-0.5" />
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-base">What happens next?</h4>
+                  <ul className="text-sm text-muted-foreground space-y-1.5">
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-0.5">•</span>
+                      <span>We'll automatically assign you an available doctor in the selected department</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-0.5">•</span>
+                      <span>Your doctor will review your information and guide your treatment</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-0.5">•</span>
+                      <span>This doctor will stay with you throughout your recovery</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary mt-0.5">•</span>
+                      <span>You'll be able to see your assigned doctor in your dashboard</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          <div className="flex gap-3 pt-4 border-t">
+            <Button
+              onClick={handleOnboardingSubmit}
+              disabled={!onboardingForm.chief_complaint || !onboardingForm.department_id || assigningDoctor}
+              className="w-full h-14 text-base gradient-royal btn-press hover-lift disabled:opacity-50"
+            >
+              {assigningDoctor ? (
+                <>
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    className="mr-2"
+                  >
+                    <Hospital className="w-5 h-5" />
+                  </motion.div>
+                  Assigning Doctor...
+                </>
+              ) : (
+                <>
+                  <Heart className="w-5 h-5 mr-2" />
+                  Get Started with My Doctor
+                </>
+              )}
             </Button>
           </div>
         </DialogContent>
