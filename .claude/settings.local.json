@@ -7,7 +7,8 @@
       "Bash(npm run dev)",
       "Bash(npm test:*)",
       "Bash(node generate-favicons.js)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(mv:*)"
     ],
     "deny": [],
     "ask": []
