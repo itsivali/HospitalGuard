@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**HospitalGuard** is a comprehensive, luxury hospital management system built with React, TypeScript, Vite, and Supabase. The application provides complete patient journey tracking from admission to discharge and beyond, with telemedicine aftercare, across all hospital departments.
+**HospitalGuard** is a comprehensive, luxury hospital management system for **Level 1 Trauma Centers**, built with React, TypeScript, Vite, and Supabase. The application provides complete patient journey tracking from admission to discharge and beyond, with telemedicine aftercare, across all hospital departments. As a Level 1 facility, HospitalGuard supports 24/7 operations with full specialty coverage, advanced trauma care, and comprehensive medical services.
 
 ### Core Features
 - **Complete Patient Journey**: Track patients from walk-in through registration, triage, consultation, treatment, lab/radiology, prescriptions, billing, discharge, and telemedicine follow-up
@@ -129,7 +129,15 @@ These must be set in a `.env` file at the project root.
 - Appointments across all departments
 - Complete audit logging
 
-To set up the database, run the SQL file in your Supabase SQL editor.
+**Database Setup for Level 1 Hospital**:
+1. Run [supabase-schema.sql](supabase-schema.sql) to create all tables and relationships
+2. Run [supabase-seed-level1-hospital.sql](supabase-seed-level1-hospital.sql) to populate with:
+   - **20 Departments** (Emergency, ICU, Surgery, Cardiology, Neurology, Oncology, etc.)
+   - **80+ Medical Staff** (Doctors, Nurses, Pharmacists, Lab Techs, Radiologists)
+   - **35+ Pharmacy Medications** (Pain management, antibiotics, cardiovascular, etc.)
+3. See [DATABASE_SETUP.md](DATABASE_SETUP.md) for detailed setup instructions
+
+This ensures the hospital is fully staffed with qualified professionals in every department, ready for 24/7 operations.
 
 ### State Management
 

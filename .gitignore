@@ -28,3 +28,5 @@ dist-ssr
 .claude/**
 CLAUDE.md
 claude.md
+CLAUDE.md
+.claude/settings.local.json

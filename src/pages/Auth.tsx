@@ -43,7 +43,8 @@ const Auth = () => {
   });
 
   // Patient onboarding states
-  const [patientSignupStep, setPatientSignupStep] = useState<"basic" | "symptoms" | "doctor-assignment">("basic");
+  const [signupStep, setSignupStep] = useState<"role-selection" | "patient-flow" | "staff-flow">("role-selection");
+  const [patientSignupStep, setPatientSignupStep] = useState<"symptoms" | "basic" | "doctor-assignment">("basic");
   const [symptomData, setSymptomData] = useState({
     chiefComplaint: "",
     additionalSymptoms: ""
@@ -173,10 +174,15 @@ Choose the most appropriate department from the list above. Be concise and profe
       const analysis = await simulateAIAnalysis(symptomData.chiefComplaint, symptomData.additionalSymptoms, departments);
 
       setAiAnalysis(analysis);
-      setPatientSignupStep("doctor-assignment");
 
-      // Now assign a doctor from the suggested department
-      await assignDoctorFromDepartment(analysis.departmentId);
+      // Try to assign a doctor from the suggested department
+      const doctorAssigned = await assignDoctorFromDepartment(analysis.departmentId);
+
+      // Move to doctor assignment step even if no doctor was assigned
+      // The UI will handle the case where there's no doctor
+      if (doctorAssigned || analysis) {
+        setPatientSignupStep("doctor-assignment");
+      }
 
     } catch (error) {
       console.error("Error analyzing symptoms:", error);
@@ -292,18 +298,37 @@ Choose the most appropriate department from the list above. Be concise and profe
     };
   };
 
-  const assignDoctorFromDepartment = async (departmentId: string) => {
+  const assignDoctorFromDepartment = async (departmentId: string): Promise<boolean> => {
     try {
+      console.log('Attempting to assign doctor from department:', departmentId);
+
       const { data: doctors, error } = await supabase
         .from('hospital_staff')
-        .select('id, first_name, last_name, specialization')
+        .select('id, first_name, last_name, specialization, patient_care_type')
         .eq('department_id', departmentId)
         .eq('staff_type', 'doctor')
         .eq('is_active', true)
+        .in('patient_care_type', ['outpatient', 'both'])
         .limit(5);
 
-      if (error || !doctors || doctors.length === 0) {
-        throw new Error('No available doctors in this department');
+      console.log('Doctor query result:', { doctors, error });
+
+      if (error) {
+        console.error('Database error:', error);
+        toast({
+          title: "Note",
+          description: "Unable to query doctors from database. You can still continue with registration.",
+        });
+        return false;
+      }
+
+      if (!doctors || doctors.length === 0) {
+        console.warn('No doctors found for department:', departmentId);
+        toast({
+          title: "No Doctors Available",
+          description: "No doctors found in this department. A doctor will be assigned to you after registration.",
+        });
+        return false;
       }
 
       // Select a random doctor
@@ -314,25 +339,25 @@ Choose the most appropriate department from the list above. Be concise and profe
         lastName: selectedDoctor.last_name,
         specialization: selectedDoctor.specialization
       });
+      console.log('Doctor assigned successfully:', selectedDoctor);
+      return true;
     } catch (error) {
       console.error("Error assigning doctor:", error);
       toast({
-        title: "Doctor Assignment Failed",
-        description: "Unable to assign a doctor. Please try again.",
-        variant: "destructive"
+        title: "Note",
+        description: "Unable to assign a doctor right now. A doctor will be assigned to you after registration.",
       });
+      return false;
     }
   };
 
-  const handlePatientBasicInfo = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // If role is patient, continue to symptoms step
-    if (signupData.role === "patient") {
-      setPatientSignupStep("symptoms");
+  const handleRoleSelection = (role: string) => {
+    setSignupData({ ...signupData, role });
+    if (role === "patient") {
+      setSignupStep("patient-flow");
+      setPatientSignupStep("basic");
     } else {
-      // If role is staff (non-patient), create account directly
-      await handleStaffSignup(e);
+      setSignupStep("staff-flow");
     }
   };
 
@@ -349,11 +374,17 @@ Choose the most appropriate department from the list above. Be concise and profe
     await analyzeSymptomsWithAI();
   };
 
+  const handlePatientBasicInfo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // This is called after AI analysis, so proceed to final signup
+    await handleFinalSignup();
+  };
+
   const handleFinalSignup = async () => {
-    if (!assignedDoctor || !aiAnalysis) {
+    if (!aiAnalysis) {
       toast({
         title: "Error",
-        description: "Doctor assignment incomplete. Please try again.",
+        description: "Please complete the symptom analysis first.",
         variant: "destructive"
       });
       return;
@@ -371,7 +402,7 @@ Choose the most appropriate department from the list above. Be concise and profe
             full_name: signupData.fullName,
             phone: signupData.phone,
             role: "patient",
-            assigned_doctor_id: assignedDoctor.id,
+            assigned_doctor_id: assignedDoctor?.id || null,
             chief_complaint: symptomData.chiefComplaint,
             department_id: aiAnalysis.departmentId
           },
@@ -407,7 +438,7 @@ Choose the most appropriate department from the list above. Be concise and profe
 
         if (patientError) throw patientError;
 
-        // Create patient visit with assigned doctor
+        // Create patient visit with assigned doctor (if available)
         const visitNumber = `V-${Date.now()}`;
         await supabase.from('patient_visits').insert({
           patient_id: patientData.id,
@@ -415,7 +446,7 @@ Choose the most appropriate department from the list above. Be concise and profe
           admission_type: 'walk_in',
           status: 'checked_in',
           chief_complaint: symptomData.chiefComplaint,
-          attending_doctor_id: assignedDoctor.id,
+          attending_doctor_id: assignedDoctor?.id || null,
           current_department_id: aiAnalysis.departmentId,
           notes: symptomData.additionalSymptoms || null,
           triage_level: aiAnalysis.urgencyLevel
@@ -423,7 +454,9 @@ Choose the most appropriate department from the list above. Be concise and profe
 
         toast({
           title: "Welcome to HospitalGuard!",
-          description: `Your account has been created and you've been assigned to Dr. ${assignedDoctor.firstName} ${assignedDoctor.lastName}.`,
+          description: assignedDoctor
+            ? `Your account has been created and you've been assigned to Dr. ${assignedDoctor.firstName} ${assignedDoctor.lastName}.`
+            : "Your account has been created. A doctor will be assigned to you shortly.",
         });
 
         // Auto-login and navigate
@@ -597,9 +630,70 @@ Choose the most appropriate department from the list above. Be concise and profe
               </TabsContent>
 
               <TabsContent value="signup" className="mt-6">
-                {signupData.role === "patient" ? (
-                  <AnimatePresence mode="wait">
-                    {patientSignupStep === "basic" && (
+                <AnimatePresence mode="wait">
+                  {signupStep === "role-selection" && (
+                    <motion.div
+                      key="role"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      className="space-y-4"
+                    >
+                      <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 mb-6">
+                        <div className="flex gap-3 items-start">
+                          <Sparkles className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                          <div>
+                            <h4 className="font-semibold text-sm mb-1">Choose Your Account Type</h4>
+                            <p className="text-xs text-muted-foreground">
+                              Patients get AI-powered doctor assignment. Staff signup is quick and easy.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <Label className="text-sm font-medium">I am signing up as a...</Label>
+
+                        <button
+                          type="button"
+                          onClick={() => handleRoleSelection("patient")}
+                          className="w-full p-6 rounded-xl border-2 border-border hover:border-primary hover:bg-primary/5 transition-all text-left group"
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="w-14 h-14 gradient-royal rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                              <Users className="w-7 h-7 text-white" />
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="font-bold text-lg mb-1">Patient</h4>
+                              <p className="text-sm text-muted-foreground">Get matched with the right doctor using AI</p>
+                            </div>
+                            <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                          </div>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleRoleSelection("doctor")}
+                          className="w-full p-6 rounded-xl border-2 border-border hover:border-secondary hover:bg-secondary/5 transition-all text-left group"
+                        >
+                          <div className="flex items-center gap-4">
+                            <div className="w-14 h-14 gradient-emerald rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                              <Stethoscope className="w-7 h-7 text-white" />
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="font-bold text-lg mb-1">Hospital Staff</h4>
+                              <p className="text-sm text-muted-foreground">Doctor, Nurse, Pharmacist, or other staff</p>
+                            </div>
+                            <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-secondary transition-colors" />
+                          </div>
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {signupStep === "patient-flow" ? (
+                    <AnimatePresence mode="wait">
+                      {patientSignupStep === "basic" && (
                       <motion.form
                         key="basic"
                         initial={{ opacity: 0, x: 20 }}
@@ -620,38 +714,6 @@ Choose the most appropriate department from the list above. Be concise and profe
                           </div>
                         </div>
 
-                        <div className="space-y-2">
-                          <Label htmlFor="signup-role" className="text-sm font-medium">I am signing up as a...</Label>
-                          <Select
-                            value={signupData.role}
-                            onValueChange={(value) => setSignupData({ ...signupData, role: value })}
-                          >
-                            <SelectTrigger className="h-11">
-                              <SelectValue placeholder="Select your role" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="patient">
-                                <div className="flex items-center gap-2">
-                                  <Users className="w-4 h-4" />
-                                  <span>Patient</span>
-                                </div>
-                              </SelectItem>
-                              <SelectItem value="doctor">
-                                <div className="flex items-center gap-2">
-                                  <Stethoscope className="w-4 h-4" />
-                                  <span>Doctor</span>
-                                </div>
-                              </SelectItem>
-                              <SelectItem value="nurse">Nurse</SelectItem>
-                              <SelectItem value="pharmacist">Pharmacist</SelectItem>
-                              <SelectItem value="billing">Billing Staff</SelectItem>
-                              <SelectItem value="lab_tech">Lab Technician</SelectItem>
-                              <SelectItem value="radiologist">Radiologist</SelectItem>
-                              <SelectItem value="receptionist">Receptionist</SelectItem>
-                              <SelectItem value="admin">Administrator</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
 
                         <div className="space-y-2">
                           <Label htmlFor="signup-name" className="text-sm font-medium">Full Name</Label>
@@ -718,14 +780,11 @@ Choose the most appropriate department from the list above. Be concise and profe
                         </div>
 
                         <Button
-                          type="submit"
+                          type="button"
+                          onClick={() => setPatientSignupStep("symptoms")}
                           className="w-full h-11 mt-6 gradient-royal btn-press luxury-shadow"
                         >
-                          {signupData.role === "patient" ? (
-                            <>Continue <ArrowRight className="w-4 h-4 ml-2" /></>
-                          ) : (
-                            "Create Account"
-                          )}
+                          Continue <ArrowRight className="w-4 h-4 ml-2" />
                         </Button>
                       </motion.form>
                     )}
@@ -786,6 +845,7 @@ Choose the most appropriate department from the list above. Be concise and profe
                             variant="outline"
                             className="flex-1 h-11"
                             onClick={() => setPatientSignupStep("basic")}
+                            disabled={isAnalyzing}
                           >
                             Back
                           </Button>
@@ -810,7 +870,7 @@ Choose the most appropriate department from the list above. Be concise and profe
                       </motion.form>
                     )}
 
-                    {patientSignupStep === "doctor-assignment" && aiAnalysis && assignedDoctor && (
+                    {patientSignupStep === "doctor-assignment" && aiAnalysis && (
                       <motion.div
                         key="doctor"
                         initial={{ opacity: 0, x: 20 }}
@@ -834,24 +894,44 @@ Choose the most appropriate department from the list above. Be concise and profe
                           </div>
                         </div>
 
-                        <div className="p-6 rounded-xl bg-gradient-to-br from-secondary/10 to-accent/10 border border-secondary/20">
-                          <div className="flex items-start gap-4">
-                            <div className="w-12 h-12 gradient-royal rounded-full flex items-center justify-center">
-                              <Stethoscope className="w-6 h-6 text-white" />
-                            </div>
-                            <div className="flex-1">
-                              <h4 className="font-semibold mb-2">Your Assigned Doctor</h4>
-                              <p className="text-lg font-bold text-primary mb-1">
-                                Dr. {assignedDoctor.firstName} {assignedDoctor.lastName}
-                              </p>
-                              <p className="text-sm text-muted-foreground">{assignedDoctor.specialization}</p>
-                              <div className="mt-3 flex items-center gap-2 text-sm">
-                                <CheckCircle2 className="w-4 h-4 text-secondary" />
-                                <span className="text-muted-foreground">This doctor will stay with you throughout your recovery</span>
+                        {assignedDoctor ? (
+                          <div className="p-6 rounded-xl bg-gradient-to-br from-secondary/10 to-accent/10 border border-secondary/20">
+                            <div className="flex items-start gap-4">
+                              <div className="w-12 h-12 gradient-royal rounded-full flex items-center justify-center">
+                                <Stethoscope className="w-6 h-6 text-white" />
+                              </div>
+                              <div className="flex-1">
+                                <h4 className="font-semibold mb-2">Your Assigned Doctor</h4>
+                                <p className="text-lg font-bold text-primary mb-1">
+                                  Dr. {assignedDoctor.firstName} {assignedDoctor.lastName}
+                                </p>
+                                <p className="text-sm text-muted-foreground">{assignedDoctor.specialization}</p>
+                                <div className="mt-3 flex items-center gap-2 text-sm">
+                                  <CheckCircle2 className="w-4 h-4 text-secondary" />
+                                  <span className="text-muted-foreground">This doctor will stay with you throughout your recovery</span>
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
+                        ) : (
+                          <div className="p-6 rounded-xl bg-gradient-to-br from-amber/10 to-accent/10 border border-amber/20">
+                            <div className="flex items-start gap-4">
+                              <div className="w-12 h-12 bg-amber/20 rounded-full flex items-center justify-center">
+                                <AlertCircle className="w-6 h-6 text-amber-600" />
+                              </div>
+                              <div className="flex-1">
+                                <h4 className="font-semibold mb-2">Doctor Assignment Pending</h4>
+                                <p className="text-sm text-muted-foreground mb-3">
+                                  No doctors are currently available in the {aiAnalysis.suggestedDepartment} department.
+                                </p>
+                                <div className="flex items-center gap-2 text-sm">
+                                  <CheckCircle2 className="w-4 h-4 text-secondary" />
+                                  <span className="text-muted-foreground">A doctor will be assigned to you shortly after registration</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
 
                         <Button
                           onClick={handleFinalSignup}
@@ -985,6 +1065,7 @@ Choose the most appropriate department from the list above. Be concise and profe
                     </Button>
                   </form>
                 )}
+                </AnimatePresence>
               </TabsContent>
             </Tabs>
           </CardContent>

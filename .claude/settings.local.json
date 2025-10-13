@@ -10,7 +10,10 @@
       "Bash(node:*)",
       "Bash(mv:*)",
       "Bash(npx tsx:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(npx supabase db remote-backup:*)",
+      "Bash(npm run build:dev:*)"
     ],
     "deny": [],
     "ask": []
