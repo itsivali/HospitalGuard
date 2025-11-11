@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
+import { formatCurrency } from "@/lib/currency";
 import {
   Activity,
   Hospital,
@@ -15,7 +16,7 @@ import {
   User,
   CheckCircle2,
   CreditCard,
-  DollarSign,
+  Coins,
   FileText,
   TrendingUp,
   TrendingDown,
@@ -105,11 +106,11 @@ const BillingDashboard = () => {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="w-12 h-12 bg-accent/10 rounded-2xl flex items-center justify-center">
-                    <DollarSign className="w-6 h-6 text-accent" />
+                    <Coins className="w-6 h-6 text-accent" />
                   </div>
                   <Badge variant="outline" className="bg-accent/10 text-accent border-accent/20">Today</Badge>
                 </div>
-                <h3 className="text-2xl font-bold">$24,850</h3>
+                <h3 className="text-2xl font-bold">{formatCurrency(3230500)}</h3>
                 <p className="text-sm text-muted-foreground">Revenue</p>
                 <div className="flex items-center gap-1 mt-2 text-xs text-secondary">
                   <TrendingUp className="w-3 h-3" />
@@ -131,8 +132,8 @@ const BillingDashboard = () => {
                 <h3 className="text-2xl font-bold">34</h3>
                 <p className="text-sm text-muted-foreground">Unpaid Bills</p>
                 <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
-                  <DollarSign className="w-3 h-3" />
-                  <span>$18,420 outstanding</span>
+                  <Coins className="w-3 h-3" />
+                  <span>{formatCurrency(2394600)} outstanding</span>
                 </div>
               </CardContent>
             </Card>
@@ -195,10 +196,10 @@ const BillingDashboard = () => {
             <CardContent>
               <div className="space-y-4">
                 {[
-                  { id: "INV-2025-156", patient: "John Smith", date: "Jan 10, 2025", amount: "$3,450", type: "Surgery", status: "pending", dueDate: "Jan 25, 2025" },
-                  { id: "INV-2025-157", patient: "Sarah Johnson", date: "Jan 11, 2025", amount: "$1,250", type: "Lab Tests", status: "overdue", dueDate: "Jan 11, 2025" },
-                  { id: "INV-2025-158", patient: "Michael Chen", date: "Jan 12, 2025", amount: "$850", type: "Consultation", status: "pending", dueDate: "Jan 27, 2025" },
-                  { id: "INV-2025-159", patient: "Emma Wilson", date: "Jan 12, 2025", amount: "$5,200", type: "ICU Stay", status: "pending", dueDate: "Jan 26, 2025" }
+                  { id: "INV-2025-156", patient: "John Smith", date: "Jan 10, 2025", amount: 448500, type: "Surgery", status: "pending", dueDate: "Jan 25, 2025" },
+                  { id: "INV-2025-157", patient: "Sarah Johnson", date: "Jan 11, 2025", amount: 162500, type: "Lab Tests", status: "overdue", dueDate: "Jan 11, 2025" },
+                  { id: "INV-2025-158", patient: "Michael Chen", date: "Jan 12, 2025", amount: 110500, type: "Consultation", status: "pending", dueDate: "Jan 27, 2025" },
+                  { id: "INV-2025-159", patient: "Emma Wilson", date: "Jan 12, 2025", amount: 676000, type: "ICU Stay", status: "pending", dueDate: "Jan 26, 2025" }
                 ].map((bill, i) => (
                   <div key={i} className="p-4 rounded-2xl bg-muted/30 hover-lift">
                     <div className="flex items-start justify-between mb-3">
@@ -218,7 +219,7 @@ const BillingDashboard = () => {
                         <p className="text-sm text-muted-foreground">{bill.patient}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-xl font-bold text-accent">{bill.amount}</p>
+                        <p className="text-xl font-bold text-accent">{formatCurrency(bill.amount)}</p>
                       </div>
                     </div>
                     <div className="p-3 bg-accent/5 rounded-xl border border-accent/10">
@@ -268,7 +269,7 @@ const BillingDashboard = () => {
                   <AlertCircle className="w-5 h-5 text-destructive mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="text-sm font-semibold">Overdue Payments</p>
-                    <p className="text-xs text-muted-foreground mt-1">8 bills past due date - $12,450 total</p>
+                    <p className="text-xs text-muted-foreground mt-1">8 bills past due date - {formatCurrency(1618500)} total</p>
                     <Button size="sm" className="mt-2 btn-press" variant="outline">Send Reminders</Button>
                   </div>
                 </div>
@@ -324,10 +325,10 @@ const BillingDashboard = () => {
             <CardContent>
               <div className="space-y-4">
                 {[
-                  { method: "Credit Card", count: 48, amount: "$14,250", percentage: "57%", icon: CreditCard, trend: "up" },
-                  { method: "Insurance", count: 32, amount: "$8,500", percentage: "34%", icon: Building2, trend: "stable" },
-                  { method: "Cash", count: 18, amount: "$1,650", percentage: "7%", icon: DollarSign, trend: "down" },
-                  { method: "Payment Plan", count: 14, amount: "$450", percentage: "2%", icon: Calendar, trend: "up" }
+                  { method: "Credit Card", count: 48, amount: 1852500, percentage: "57%", icon: CreditCard, trend: "up" },
+                  { method: "Insurance", count: 32, amount: 1105000, percentage: "34%", icon: Building2, trend: "stable" },
+                  { method: "Cash", count: 18, amount: 214500, percentage: "7%", icon: Coins, trend: "down" },
+                  { method: "Payment Plan", count: 14, amount: 58500, percentage: "2%", icon: Calendar, trend: "up" }
                 ].map((payment, i) => (
                   <div key={i} className="p-4 rounded-xl bg-muted/30 hover-lift">
                     <div className="flex items-center justify-between">
@@ -341,7 +342,7 @@ const BillingDashboard = () => {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-lg font-bold">{payment.amount}</p>
+                        <p className="text-lg font-bold">{formatCurrency(payment.amount)}</p>
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           {payment.trend === "up" && <ArrowUpRight className="w-3 h-3 text-secondary" />}
                           {payment.trend === "down" && <ArrowDownRight className="w-3 h-3 text-destructive" />}
@@ -367,17 +368,17 @@ const BillingDashboard = () => {
             <CardContent>
               <div className="space-y-4">
                 {[
-                  { dept: "Surgery", amount: "$8,500", patients: 8, percentage: "34%" },
-                  { dept: "ICU", amount: "$6,200", patients: 12, percentage: "25%" },
-                  { dept: "Emergency", amount: "$4,150", patients: 24, percentage: "17%" },
-                  { dept: "Outpatient", amount: "$3,200", patients: 42, percentage: "13%" },
-                  { dept: "Laboratory", amount: "$1,850", patients: 89, percentage: "7%" },
-                  { dept: "Radiology", amount: "$950", patients: 34, percentage: "4%" }
+                  { dept: "Surgery", amount: 1105000, patients: 8, percentage: "34%" },
+                  { dept: "ICU", amount: 806000, patients: 12, percentage: "25%" },
+                  { dept: "Emergency", amount: 539500, patients: 24, percentage: "17%" },
+                  { dept: "Outpatient", amount: 416000, patients: 42, percentage: "13%" },
+                  { dept: "Laboratory", amount: 240500, patients: 89, percentage: "7%" },
+                  { dept: "Radiology", amount: 123500, patients: 34, percentage: "4%" }
                 ].map((dept, i) => (
                   <div key={i} className="p-4 rounded-xl bg-muted/30 hover-lift">
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="font-semibold">{dept.dept}</h4>
-                      <p className="text-lg font-bold text-accent">{dept.amount}</p>
+                      <p className="text-lg font-bold text-accent">{formatCurrency(dept.amount)}</p>
                     </div>
                     <div className="flex items-center justify-between text-sm text-muted-foreground">
                       <span>{dept.patients} patients</span>
@@ -408,11 +409,11 @@ const BillingDashboard = () => {
           <CardContent>
             <div className="space-y-3">
               {[
-                { time: "2 min ago", type: "Payment Received", patient: "John Smith", amount: "$3,450", method: "Credit Card", status: "completed" },
-                { time: "8 min ago", type: "Invoice Sent", patient: "Sarah Johnson", amount: "$1,250", method: "Email", status: "sent" },
-                { time: "15 min ago", type: "Payment Received", patient: "Michael Chen", amount: "$850", method: "Insurance", status: "completed" },
-                { time: "25 min ago", type: "Payment Failed", patient: "Emma Wilson", amount: "$5,200", method: "Credit Card", status: "failed" },
-                { time: "35 min ago", type: "Payment Received", patient: "David Brown", amount: "$420", method: "Cash", status: "completed" }
+                { time: "2 min ago", type: "Payment Received", patient: "John Smith", amount: 448500, method: "Credit Card", status: "completed" },
+                { time: "8 min ago", type: "Invoice Sent", patient: "Sarah Johnson", amount: 162500, method: "Email", status: "sent" },
+                { time: "15 min ago", type: "Payment Received", patient: "Michael Chen", amount: 110500, method: "Insurance", status: "completed" },
+                { time: "25 min ago", type: "Payment Failed", patient: "Emma Wilson", amount: 676000, method: "Credit Card", status: "failed" },
+                { time: "35 min ago", type: "Payment Received", patient: "David Brown", amount: 54600, method: "Cash", status: "completed" }
               ].map((txn, i) => (
                 <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-muted/30 hover-lift">
                   <div className="flex items-center gap-4">
@@ -435,7 +436,7 @@ const BillingDashboard = () => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-lg font-bold">{txn.amount}</p>
+                    <p className="text-lg font-bold">{formatCurrency(txn.amount)}</p>
                     <p className="text-xs text-muted-foreground">{txn.time}</p>
                   </div>
                 </div>
