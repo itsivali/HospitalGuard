@@ -116,7 +116,7 @@ The Supabase client is configured in [src/integrations/supabase/client.ts](src/i
 
 These must be set in a `.env` file at the project root.
 
-**Database Schema**: A comprehensive schema is defined in [supabase-schema.sql](supabase-schema.sql) including:
+**Database Schema**: A comprehensive schema is defined in [hospital-database.sql](hospital-database.sql) including:
 - Patients, hospital staff, departments
 - Patient visits with complete journey tracking
 - Medical records, diagnoses
@@ -128,14 +128,17 @@ These must be set in a `.env` file at the project root.
 - Telemedicine sessions and aftercare plans
 - Appointments across all departments
 - Complete audit logging
+- Row-level security policies
+- Automated triggers for role assignment
 
 **Database Setup for Level 1 Hospital**:
-1. Run [supabase-schema.sql](supabase-schema.sql) to create all tables and relationships
-2. Run [supabase-seed-level1-hospital.sql](supabase-seed-level1-hospital.sql) to populate with:
+1. Run [hospital-database.sql](hospital-database.sql) to create all tables, relationships, triggers, and security policies
+2. Run [hospital-seed.sql](hospital-seed.sql) to populate with:
    - **20 Departments** (Emergency, ICU, Surgery, Cardiology, Neurology, Oncology, etc.)
    - **80+ Medical Staff** (Doctors, Nurses, Pharmacists, Lab Techs, Radiologists)
    - **35+ Pharmacy Medications** (Pain management, antibiotics, cardiovascular, etc.)
-3. See [DATABASE_SETUP.md](DATABASE_SETUP.md) for detailed setup instructions
+3. See [DATABASE_MODEL.md](DATABASE_MODEL.md) for comprehensive data model documentation
+4. See [DATABASE_SETUP.md](DATABASE_SETUP.md) for detailed setup instructions
 
 This ensures the hospital is fully staffed with qualified professionals in every department, ready for 24/7 operations.
 
