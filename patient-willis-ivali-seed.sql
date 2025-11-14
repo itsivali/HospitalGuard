@@ -35,7 +35,7 @@ ON CONFLICT (national_id) DO UPDATE SET
   email = EXCLUDED.email,
   phone = EXCLUDED.phone;
 
--- Ensure patient role exists for Willis
+
 INSERT INTO user_roles (user_id, role)
 SELECT id, 'patient'
 FROM auth.users

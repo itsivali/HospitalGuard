@@ -45,6 +45,8 @@ const PatientDashboard = () => {
   const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
   const [showLabResults, setShowLabResults] = useState(false);
   const [selectedLabOrder, setSelectedLabOrder] = useState<any>(null);
+  const [showMedicalHistory, setShowMedicalHistory] = useState(false);
+  const [selectedMedicalRecord, setSelectedMedicalRecord] = useState<any>(null);
   const [departments, setDepartments] = useState<any[]>([]);
   const [doctors, setDoctors] = useState<any[]>([]);
   const [loadingDepartments, setLoadingDepartments] = useState(false);
@@ -739,11 +741,11 @@ const PatientDashboard = () => {
 
                   return (
                     <div key={record.id} className="flex items-center justify-between p-4 rounded-xl bg-muted/30 hover-lift">
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-4 flex-1">
                         <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
                           <FileText className="w-6 h-6 text-primary" />
                         </div>
-                        <div>
+                        <div className="flex-1">
                           <h4 className="font-semibold">
                             {record.title}
                             {record.department && ` - ${record.department.name}`}
@@ -756,13 +758,27 @@ const PatientDashboard = () => {
                           )}
                         </div>
                       </div>
-                      <div className="text-right">
-                        <Badge variant="outline" className="bg-secondary/10 text-secondary">
-                          {record.record_type || 'Record'}
-                        </Badge>
-                        {record.is_confidential && (
-                          <p className="text-xs text-muted-foreground mt-1">Confidential</p>
-                        )}
+                      <div className="flex items-center gap-3">
+                        <div className="text-right">
+                          <Badge variant="outline" className="bg-secondary/10 text-secondary">
+                            {record.record_type || 'Record'}
+                          </Badge>
+                          {record.is_confidential && (
+                            <p className="text-xs text-muted-foreground mt-1">Confidential</p>
+                          )}
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="btn-press"
+                          onClick={() => {
+                            setSelectedMedicalRecord(record);
+                            setShowMedicalHistory(true);
+                          }}
+                        >
+                          <FileText className="w-4 h-4 mr-1" />
+                          View
+                        </Button>
                       </div>
                     </div>
                   );
@@ -1112,47 +1128,165 @@ const PatientDashboard = () => {
 
       {/* Lab Results Modal */}
       <Dialog open={showLabResults} onOpenChange={setShowLabResults}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Lab Results</DialogTitle>
+            <div className="flex items-center justify-center mb-4">
+              <div className="relative">
+                <div className="absolute inset-0 bg-destructive/30 rounded-full blur-xl"></div>
+                <div className="relative w-16 h-16 bg-gradient-to-br from-destructive to-destructive/70 rounded-full flex items-center justify-center luxury-shadow">
+                  <Heart className="w-8 h-8 text-white" />
+                </div>
+              </div>
+            </div>
+            <DialogTitle className="text-center text-2xl font-bold">Laboratory Test Results</DialogTitle>
+            <DialogDescription className="text-center">
+              Your test results have been reviewed and are ready for viewing
+            </DialogDescription>
           </DialogHeader>
           {selectedLabOrder && (
-            <div className="space-y-4 py-4">
-              <div>
-                <h4 className="font-semibold mb-2">Test Type</h4>
-                <p className="text-muted-foreground">{selectedLabOrder.test_type}</p>
+            <div className="space-y-6 py-4">
+              {/* Test Info Header */}
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="p-4 rounded-xl bg-primary/5 border border-primary/10">
+                  <p className="text-xs text-muted-foreground mb-1">Test Type</p>
+                  <h4 className="font-semibold text-primary">{selectedLabOrder.test_type}</h4>
+                </div>
+                <div className="p-4 rounded-xl bg-secondary/5 border border-secondary/10">
+                  <p className="text-xs text-muted-foreground mb-1">Order Number</p>
+                  <h4 className="font-semibold text-secondary">{selectedLabOrder.order_number}</h4>
+                </div>
+                <div className="p-4 rounded-xl bg-accent/5 border border-accent/10">
+                  <p className="text-xs text-muted-foreground mb-1">Results Available</p>
+                  <h4 className="font-semibold text-accent">
+                    {selectedLabOrder.results_available_at
+                      ? new Date(selectedLabOrder.results_available_at).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                          hour: 'numeric',
+                          minute: '2-digit'
+                        })
+                      : 'Pending'}
+                  </h4>
+                </div>
+                <div className="p-4 rounded-xl bg-destructive/5 border border-destructive/10">
+                  <p className="text-xs text-muted-foreground mb-1">Status</p>
+                  <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20">
+                    {selectedLabOrder.status}
+                  </Badge>
+                </div>
               </div>
-              <div>
-                <h4 className="font-semibold mb-2">Order Number</h4>
-                <p className="text-muted-foreground">{selectedLabOrder.order_number}</p>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2">Results Available</h4>
-                <p className="text-muted-foreground">
-                  {selectedLabOrder.results_available_at
-                    ? new Date(selectedLabOrder.results_available_at).toLocaleString()
-                    : 'Pending'}
-                </p>
-              </div>
+
+              {/* Lab Results Data */}
               {selectedLabOrder.results && (
-                <div>
-                  <h4 className="font-semibold mb-2">Results</h4>
-                  <div className="p-4 bg-muted rounded-lg">
-                    <pre className="text-sm whitespace-pre-wrap">
-                      {JSON.stringify(selectedLabOrder.results, null, 2)}
-                    </pre>
+                <div className="space-y-4">
+                  <div className="border-t pt-4">
+                    <h4 className="font-bold text-lg mb-4 flex items-center gap-2">
+                      <Activity className="w-5 h-5 text-primary" />
+                      Test Results
+                    </h4>
+
+                    {/* Interpretation (if exists) */}
+                    {selectedLabOrder.results.interpretation && (
+                      <div className="mb-6 p-4 rounded-xl bg-secondary/10 border border-secondary/20">
+                        <div className="flex items-start gap-3">
+                          <CheckCircle2 className="w-5 h-5 text-secondary mt-0.5 flex-shrink-0" />
+                          <div>
+                            <h5 className="font-semibold mb-1 text-secondary">Interpretation</h5>
+                            <p className="text-sm text-muted-foreground leading-relaxed">
+                              {selectedLabOrder.results.interpretation}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Test Values Grid */}
+                    <div className="grid gap-3">
+                      {Object.entries(selectedLabOrder.results).map(([key, value]) => {
+                        // Skip interpretation and reference_ranges as they're displayed separately
+                        if (key === 'interpretation' || key === 'reference_ranges') return null;
+
+                        // Format the key to be human-readable
+                        const formattedKey = key
+                          .replace(/_/g, ' ')
+                          .split(' ')
+                          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                          .join(' ');
+
+                        return (
+                          <div
+                            key={key}
+                            className="flex items-center justify-between p-4 rounded-xl bg-muted/30 hover-lift"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-2 h-2 rounded-full bg-primary"></div>
+                              <span className="font-medium">{formattedKey}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-lg">{value}</span>
+                              {selectedLabOrder.results.reference_ranges?.[key] && (
+                                <span className="text-xs text-muted-foreground ml-2 px-2 py-1 rounded-md bg-muted/50">
+                                  Ref: {selectedLabOrder.results.reference_ranges[key]}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Reference Ranges (if exists and not already displayed) */}
+                    {selectedLabOrder.results.reference_ranges && Object.keys(selectedLabOrder.results).length <= 3 && (
+                      <div className="mt-6 p-4 rounded-xl bg-accent/5 border border-accent/10">
+                        <h5 className="font-semibold mb-3 flex items-center gap-2">
+                          <TrendingUp className="w-4 h-4 text-accent" />
+                          Reference Ranges
+                        </h5>
+                        <div className="space-y-2">
+                          {Object.entries(selectedLabOrder.results.reference_ranges).map(([key, range]) => {
+                            const formattedKey = key
+                              .replace(/_/g, ' ')
+                              .split(' ')
+                              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                              .join(' ');
+
+                            return (
+                              <div key={key} className="flex items-center justify-between text-sm">
+                                <span className="text-muted-foreground">{formattedKey}</span>
+                                <span className="font-medium">{range}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
-              <div>
-                <h4 className="font-semibold mb-2">Status</h4>
-                <Badge>{selectedLabOrder.status}</Badge>
-              </div>
+
+              {!selectedLabOrder.results && (
+                <div className="text-center py-8">
+                  <AlertCircle className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-50" />
+                  <p className="text-muted-foreground">Results are being processed and will be available soon</p>
+                </div>
+              )}
             </div>
           )}
-          <div className="flex justify-end">
-            <Button variant="outline" onClick={() => setShowLabResults(false)}>
+          <div className="flex gap-3 pt-4 border-t">
+            <Button
+              variant="outline"
+              onClick={() => setShowLabResults(false)}
+              className="flex-1 btn-press hover-lift"
+            >
               Close
+            </Button>
+            <Button
+              onClick={() => window.print()}
+              className="flex-1 gradient-royal btn-press hover-lift"
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              Print Results
             </Button>
           </div>
         </DialogContent>
@@ -1326,6 +1460,250 @@ const PatientDashboard = () => {
                   Get Started with My Doctor
                 </>
               )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Medical History Details Modal */}
+      <Dialog open={showMedicalHistory} onOpenChange={setShowMedicalHistory}>
+        <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto" id="medical-history-print">
+          <DialogHeader>
+            <div className="flex items-center justify-center mb-4">
+              <div className="relative">
+                <div className="absolute inset-0 bg-primary/30 rounded-full blur-xl"></div>
+                <div className="relative w-16 h-16 gradient-royal rounded-full flex items-center justify-center luxury-shadow">
+                  <FileText className="w-8 h-8 text-white" />
+                </div>
+              </div>
+            </div>
+            <DialogTitle className="text-center text-2xl font-bold">Medical Record Details</DialogTitle>
+            <DialogDescription className="text-center">
+              Complete consultation notes and medical documentation
+            </DialogDescription>
+          </DialogHeader>
+          {selectedMedicalRecord && (
+            <div className="space-y-6 py-4">
+              {/* Record Header Info */}
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="p-4 rounded-xl bg-primary/5 border border-primary/10">
+                  <p className="text-xs text-muted-foreground mb-1">Record Title</p>
+                  <h4 className="font-semibold text-primary">{selectedMedicalRecord.title}</h4>
+                </div>
+                <div className="p-4 rounded-xl bg-secondary/5 border border-secondary/10">
+                  <p className="text-xs text-muted-foreground mb-1">Record Type</p>
+                  <Badge variant="outline" className="bg-secondary/10 text-secondary border-secondary/20">
+                    {selectedMedicalRecord.record_type || 'Medical Record'}
+                  </Badge>
+                </div>
+                <div className="p-4 rounded-xl bg-accent/5 border border-accent/10">
+                  <p className="text-xs text-muted-foreground mb-1">Date</p>
+                  <h4 className="font-semibold text-accent">
+                    {new Date(selectedMedicalRecord.created_at).toLocaleDateString('en-US', {
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric',
+                      hour: 'numeric',
+                      minute: '2-digit'
+                    })}
+                  </h4>
+                </div>
+                <div className="p-4 rounded-xl bg-destructive/5 border border-destructive/10">
+                  <p className="text-xs text-muted-foreground mb-1">Department</p>
+                  <h4 className="font-semibold text-destructive">
+                    {selectedMedicalRecord.department?.name || 'N/A'}
+                  </h4>
+                </div>
+              </div>
+
+              {/* Doctor Information */}
+              {selectedMedicalRecord.doctor && (
+                <div className="p-4 rounded-xl bg-muted/30 border">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                      <User className="w-6 h-6 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Attending Physician</p>
+                      <h4 className="font-semibold">
+                        Dr. {selectedMedicalRecord.doctor.first_name} {selectedMedicalRecord.doctor.last_name}
+                      </h4>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Patient Information */}
+              {patientData && (
+                <div className="p-4 rounded-xl bg-secondary/5 border border-secondary/10">
+                  <h5 className="font-semibold mb-3 flex items-center gap-2">
+                    <User className="w-4 h-4 text-secondary" />
+                    Patient Information
+                  </h5>
+                  <div className="grid gap-2 md:grid-cols-2 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">Name:</span>
+                      <span className="ml-2 font-medium">{patientData.first_name} {patientData.last_name}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Date of Birth:</span>
+                      <span className="ml-2 font-medium">
+                        {new Date(patientData.date_of_birth).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric'
+                        })}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Blood Type:</span>
+                      <span className="ml-2 font-medium">{patientData.blood_type}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Gender:</span>
+                      <span className="ml-2 font-medium capitalize">{patientData.gender}</span>
+                    </div>
+                    {patientData.allergies && patientData.allergies.length > 0 && (
+                      <div className="md:col-span-2">
+                        <span className="text-muted-foreground">Allergies:</span>
+                        <span className="ml-2 font-medium text-destructive">
+                          {patientData.allergies.join(', ')}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Medical Record Description/Notes */}
+              <div className="border-t pt-6">
+                <h4 className="font-bold text-lg mb-4 flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-primary" />
+                  Clinical Documentation
+                </h4>
+                <div className="p-6 rounded-xl bg-muted/20 border">
+                  <div className="prose prose-sm max-w-none">
+                    <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-foreground">
+                      {selectedMedicalRecord.description}
+                    </pre>
+                  </div>
+                </div>
+              </div>
+
+              {/* Additional Notes */}
+              {selectedMedicalRecord.notes && (
+                <div className="p-4 rounded-xl bg-accent/5 border border-accent/10">
+                  <h5 className="font-semibold mb-2 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-accent" />
+                    Additional Notes
+                  </h5>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {selectedMedicalRecord.notes}
+                  </p>
+                </div>
+              )}
+
+              {/* Confidentiality Notice */}
+              {selectedMedicalRecord.is_confidential && (
+                <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="w-5 h-5 text-destructive mt-0.5 flex-shrink-0" />
+                    <div>
+                      <h5 className="font-semibold text-destructive mb-1">Confidential Record</h5>
+                      <p className="text-xs text-muted-foreground">
+                        This medical record contains sensitive information and should be handled with appropriate confidentiality.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Footer Information */}
+              <div className="text-center text-xs text-muted-foreground border-t pt-4">
+                <p>HospitalGuard Level 1 Trauma Center</p>
+                <p>This is an official medical record. For inquiries, contact your healthcare provider.</p>
+              </div>
+            </div>
+          )}
+          <div className="flex gap-3 pt-4 border-t">
+            <Button
+              variant="outline"
+              onClick={() => setShowMedicalHistory(false)}
+              className="flex-1 btn-press hover-lift"
+            >
+              Close
+            </Button>
+            <Button
+              onClick={() => {
+                const printContent = document.getElementById('medical-history-print');
+                if (printContent) {
+                  const printWindow = window.open('', '_blank');
+                  if (printWindow) {
+                    printWindow.document.write(`
+                      <html>
+                        <head>
+                          <title>Medical Record - ${selectedMedicalRecord?.title || 'Document'}</title>
+                          <style>
+                            body {
+                              font-family: Arial, sans-serif;
+                              padding: 20mm;
+                              line-height: 1.6;
+                            }
+                            h1, h2, h3, h4 { color: #1e40af; margin-top: 20px; }
+                            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #1e40af; padding-bottom: 10px; }
+                            .section { margin: 20px 0; padding: 15px; border: 1px solid #e5e7eb; border-radius: 8px; }
+                            .label { font-weight: bold; color: #6b7280; }
+                            .value { margin-left: 10px; }
+                            .footer { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #6b7280; }
+                            pre { white-space: pre-wrap; font-family: Arial, sans-serif; }
+                          </style>
+                        </head>
+                        <body>
+                          <div class="header">
+                            <h1>HospitalGuard Level 1 Trauma Center</h1>
+                            <h2>Medical Record</h2>
+                          </div>
+                          <div class="section">
+                            <h3>${selectedMedicalRecord?.title || 'Medical Record'}</h3>
+                            <p><span class="label">Date:</span><span class="value">${new Date(selectedMedicalRecord?.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}</span></p>
+                            <p><span class="label">Department:</span><span class="value">${selectedMedicalRecord?.department?.name || 'N/A'}</span></p>
+                            <p><span class="label">Physician:</span><span class="value">Dr. ${selectedMedicalRecord?.doctor?.first_name || ''} ${selectedMedicalRecord?.doctor?.last_name || ''}</span></p>
+                          </div>
+                          ${patientData ? `
+                          <div class="section">
+                            <h4>Patient Information</h4>
+                            <p><span class="label">Name:</span><span class="value">${patientData.first_name} ${patientData.last_name}</span></p>
+                            <p><span class="label">Date of Birth:</span><span class="value">${new Date(patientData.date_of_birth).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span></p>
+                            <p><span class="label">Blood Type:</span><span class="value">${patientData.blood_type}</span></p>
+                            ${patientData.allergies && patientData.allergies.length > 0 ? `<p><span class="label">Allergies:</span><span class="value" style="color: #dc2626;">${patientData.allergies.join(', ')}</span></p>` : ''}
+                          </div>
+                          ` : ''}
+                          <div class="section">
+                            <h4>Clinical Documentation</h4>
+                            <pre>${selectedMedicalRecord?.description || ''}</pre>
+                          </div>
+                          ${selectedMedicalRecord?.notes ? `
+                          <div class="section">
+                            <h4>Additional Notes</h4>
+                            <p>${selectedMedicalRecord.notes}</p>
+                          </div>
+                          ` : ''}
+                          <div class="footer">
+                            <p>HospitalGuard Level 1 Trauma Center</p>
+                            <p>This is an official medical record. Printed on ${new Date().toLocaleString()}</p>
+                          </div>
+                        </body>
+                      </html>
+                    `);
+                    printWindow.document.close();
+                    printWindow.print();
+                  }
+                }
+              }}
+              className="flex-1 gradient-royal btn-press hover-lift"
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              Print Record
             </Button>
           </div>
         </DialogContent>
