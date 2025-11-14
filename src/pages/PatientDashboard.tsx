@@ -40,6 +40,8 @@ const PatientDashboard = () => {
   const [prescriptions, setPrescriptions] = useState<any[]>([]);
   const [medicalRecords, setMedicalRecords] = useState<any[]>([]);
   const [labOrders, setLabOrders] = useState<any[]>([]);
+  const [careTeam, setCareTeam] = useState<any[]>([]);
+  const [currentVisit, setCurrentVisit] = useState<any>(null);
   const [showBookAppointment, setShowBookAppointment] = useState(false);
   const [showAppointmentDetails, setShowAppointmentDetails] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
@@ -47,6 +49,8 @@ const PatientDashboard = () => {
   const [selectedLabOrder, setSelectedLabOrder] = useState<any>(null);
   const [showMedicalHistory, setShowMedicalHistory] = useState(false);
   const [selectedMedicalRecord, setSelectedMedicalRecord] = useState<any>(null);
+  const [showRefillRequest, setShowRefillRequest] = useState(false);
+  const [selectedPrescription, setSelectedPrescription] = useState<any>(null);
   const [departments, setDepartments] = useState<any[]>([]);
   const [doctors, setDoctors] = useState<any[]>([]);
   const [loadingDepartments, setLoadingDepartments] = useState(false);
@@ -175,6 +179,65 @@ const PatientDashboard = () => {
           .limit(5);
 
         setLabOrders(labData || []);
+
+        // Fetch current visit and attending doctor
+        const { data: currentVisitData, error: currentVisitError } = await supabase
+          .from('patient_visits')
+          .select(`
+            *,
+            attending_doctor:hospital_staff!patient_visits_attending_doctor_id_fkey(
+              id, first_name, last_name, specialization, email
+            ),
+            department:departments(name)
+          `)
+          .eq('patient_id', patient.id)
+          .in('status', ['checked_in', 'in_triage', 'in_consultation', 'in_treatment'])
+          .order('check_in_time', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (currentVisitError) {
+          console.log('Current visit fetch (no active visit is normal):', currentVisitError.message);
+        }
+
+        if (currentVisitData) {
+          console.log('Current visit found:', currentVisitData);
+          setCurrentVisit(currentVisitData);
+        }
+
+        // Fetch care team (unique doctors from recent visits and medical records)
+        const { data: recentVisits, error: visitsError } = await supabase
+          .from('patient_visits')
+          .select(`
+            attending_doctor_id,
+            attending_doctor:hospital_staff!patient_visits_attending_doctor_id_fkey(
+              id, first_name, last_name, specialization, email
+            )
+          `)
+          .eq('patient_id', patient.id)
+          .not('attending_doctor_id', 'is', null)
+          .order('check_in_time', { ascending: false })
+          .limit(10);
+
+        if (visitsError) {
+          console.error('Error fetching visits for care team:', visitsError);
+        }
+
+        console.log('Recent visits data:', recentVisits);
+
+        // Extract unique doctors
+        const doctorsMap = new Map();
+        if (recentVisits && recentVisits.length > 0) {
+          recentVisits.forEach(visit => {
+            if (visit.attending_doctor && !doctorsMap.has(visit.attending_doctor.id)) {
+              doctorsMap.set(visit.attending_doctor.id, visit.attending_doctor);
+            }
+          });
+        }
+
+        const careTeamArray = Array.from(doctorsMap.values());
+        console.log('Care team extracted:', careTeamArray);
+        setCareTeam(careTeamArray);
       }
     } catch (error) {
       console.error("Error fetching patient data:", error);
@@ -230,18 +293,46 @@ const PatientDashboard = () => {
   const fetchDoctors = async (departmentId: string) => {
     try {
       setLoadingDoctors(true);
-      const { data, error } = await supabase
-        .from('hospital_staff')
-        .select('id, first_name, last_name, specialization')
-        .eq('department_id', departmentId)
-        .eq('staff_type', 'doctor')
-        .eq('is_active', true)
-        .order('last_name');
+      if (departmentId) {
+        // Fetch doctors for specific department
+        const { data, error } = await supabase
+          .from('hospital_staff')
+          .select(`
+            id,
+            first_name,
+            last_name,
+            specialization,
+            department:departments(id, name)
+          `)
+          .eq('department_id', departmentId)
+          .eq('staff_type', 'doctor')
+          .eq('is_active', true)
+          .order('last_name');
 
-      if (error) {
-        console.error("Error fetching doctors:", error);
+        if (error) {
+          console.error("Error fetching doctors:", error);
+        }
+        setDoctors(data || []);
+      } else {
+        // Fetch all doctors when no department is selected
+        const { data, error } = await supabase
+          .from('hospital_staff')
+          .select(`
+            id,
+            first_name,
+            last_name,
+            specialization,
+            department:departments(id, name)
+          `)
+          .eq('staff_type', 'doctor')
+          .eq('is_active', true)
+          .order('last_name');
+
+        if (error) {
+          console.error("Error fetching doctors:", error);
+        }
+        setDoctors(data || []);
       }
-      setDoctors(data || []);
     } catch (error) {
       console.error("Exception fetching doctors:", error);
       setDoctors([]);
@@ -310,11 +401,25 @@ const PatientDashboard = () => {
     }
   };
 
-  const handleRequestRefill = async (prescriptionId: string) => {
-    toast({
-      title: "Refill Requested",
-      description: "Your prescription refill request has been submitted to your doctor"
-    });
+  const handleRequestRefill = async () => {
+    if (!selectedPrescription) return;
+
+    try {
+      // In a real implementation, you would insert into a refill_requests table
+      // For now, we'll show a success message
+      toast({
+        title: "Refill Requested",
+        description: `Your refill request for ${selectedPrescription.prescription_number} has been submitted to your doctor`
+      });
+      setShowRefillRequest(false);
+      setSelectedPrescription(null);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to submit refill request",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleLogout = async () => {
@@ -493,6 +598,159 @@ const PatientDashboard = () => {
                 </div>
                 <h3 className="text-2xl font-bold">{medicalRecords.length}</h3>
                 <p className="text-sm text-muted-foreground">Medical Records</p>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+
+        {/* Current Visit & Care Team */}
+        <div className={`grid gap-6 mb-6 ${currentVisit ? 'lg:grid-cols-2' : 'lg:grid-cols-1 max-w-2xl'}`}>
+          {/* Current Visit Status */}
+          {currentVisit && (
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+                <Card className="card-shadow hover-lift border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+                  <CardHeader>
+                    <CardTitle className="text-xl flex items-center gap-2">
+                      <Hospital className="w-5 h-5 text-primary" />
+                      Current Visit
+                    </CardTitle>
+                    <CardDescription>You have an active hospital visit</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="p-4 rounded-xl bg-white/50 dark:bg-muted/50 border">
+                        <div className="flex items-start justify-between mb-3">
+                          <div>
+                            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 mb-2">
+                              {currentVisit.status?.replace('_', ' ').toUpperCase()}
+                            </Badge>
+                            <h4 className="font-semibold text-lg">{currentVisit.chief_complaint}</h4>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              {currentVisit.department?.name || 'General Care'}
+                            </p>
+                          </div>
+                        </div>
+
+                        {currentVisit.attending_doctor && (
+                          <div className="flex items-center gap-3 mt-4 p-3 rounded-lg bg-secondary/10 border border-secondary/20">
+                            <div className="w-10 h-10 bg-secondary/20 rounded-full flex items-center justify-center">
+                              <User className="w-5 h-5 text-secondary" />
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground">Attending Physician</p>
+                              <p className="font-semibold">
+                                Dr. {currentVisit.attending_doctor.first_name} {currentVisit.attending_doctor.last_name}
+                              </p>
+                              {currentVisit.attending_doctor.specialization && (
+                                <p className="text-xs text-muted-foreground">
+                                  {currentVisit.attending_doctor.specialization}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="mt-3 text-xs text-muted-foreground">
+                          <p>Visit Number: {currentVisit.visit_number}</p>
+                          <p>Checked in: {new Date(currentVisit.check_in_time).toLocaleString()}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+          {/* My Care Team - Always Visible */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: currentVisit ? 0.1 : 0 }}
+          >
+            <Card className="card-shadow hover-lift">
+              <CardHeader>
+                <CardTitle className="text-xl flex items-center gap-2">
+                  <Heart className="w-5 h-5 text-secondary" />
+                  My Care Team
+                </CardTitle>
+                <CardDescription>Your healthcare providers</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {careTeam.length === 0 ? (
+                  /* Empty State - No Care Team Yet */
+                  <div className="text-center py-8">
+                    <div className="w-20 h-20 mx-auto mb-4 bg-secondary/10 rounded-full flex items-center justify-center">
+                      <User className="w-10 h-10 text-secondary opacity-50" />
+                    </div>
+                    <h4 className="font-semibold mb-2">No Care Team Yet</h4>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Once you book your first appointment or visit the hospital, your assigned doctors will appear here.
+                    </p>
+                    <Button
+                      className="btn-press gradient-royal"
+                      onClick={() => setShowBookAppointment(true)}
+                    >
+                      <Calendar className="w-4 h-4 mr-2" />
+                      Book First Appointment
+                    </Button>
+                  </div>
+                ) : (
+                  /* Care Team List */
+                  <div className="space-y-3">
+                    {careTeam.slice(0, 3).map((doctor, index) => (
+                      <motion.div
+                        key={doctor.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 hover-lift"
+                      >
+                        <div className="w-12 h-12 gradient-royal rounded-full flex items-center justify-center flex-shrink-0">
+                          <User className="w-6 h-6 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold">
+                            Dr. {doctor.first_name} {doctor.last_name}
+                          </h4>
+                          {doctor.specialization && (
+                            <p className="text-sm text-muted-foreground">
+                              {doctor.specialization}
+                            </p>
+                          )}
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="btn-press"
+                          onClick={async () => {
+                            // Pre-select this doctor and their department
+                            const doctorDept = doctor.department_id || (await supabase
+                              .from('hospital_staff')
+                              .select('department_id')
+                              .eq('id', doctor.id)
+                              .single()).data?.department_id;
+
+                            setBookingForm({
+                              ...bookingForm,
+                              doctor_id: doctor.id,
+                              department_id: doctorDept || '',
+                              appointment_type: 'follow_up'
+                            });
+                            setShowBookAppointment(true);
+                          }}
+                        >
+                          Book Visit
+                        </Button>
+                      </motion.div>
+                    ))}
+
+                    {careTeam.length > 3 && (
+                      <p className="text-center text-sm text-muted-foreground mt-2">
+                        + {careTeam.length - 3} more doctor{careTeam.length - 3 > 1 ? 's' : ''} in your care team
+                      </p>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </motion.div>
@@ -708,9 +966,24 @@ const PatientDashboard = () => {
                         <Clock className="w-3 h-3" />
                         Expires: {expiryDate}
                       </div>
-                      <Badge variant="outline" className="text-xs bg-secondary/10">
-                        {rx.status}
-                      </Badge>
+                      <div className="flex items-center gap-2 mt-2">
+                        <Badge variant="outline" className="text-xs bg-secondary/10">
+                          {rx.status}
+                        </Badge>
+                        {rx.refills_allowed === 0 && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="btn-press text-xs h-6"
+                            onClick={() => {
+                              setSelectedPrescription(rx);
+                              setShowRefillRequest(true);
+                            }}
+                          >
+                            Request Refill
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   );
                 })}
@@ -851,52 +1124,74 @@ const PatientDashboard = () => {
             </motion.div>
 
             {/* Doctor Selection */}
-            {bookingForm.department_id && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-3"
-              >
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-3"
+            >
+              <div className="flex items-center justify-between">
                 <Label htmlFor="doctor" className="text-base font-semibold flex items-center gap-2">
                   <User className="w-4 h-4 text-secondary" />
                   Preferred Doctor (Optional)
                 </Label>
-                {loadingDoctors ? (
-                  <div className="p-4 border rounded-xl bg-muted/30 flex items-center justify-center">
-                    <p className="text-sm text-muted-foreground">Loading doctors...</p>
-                  </div>
-                ) : (
-                  <Select
-                    value={bookingForm.doctor_id}
-                    onValueChange={(value) => setBookingForm({ ...bookingForm, doctor_id: value })}
+                {!bookingForm.department_id && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-xs"
+                    onClick={() => fetchDoctors('')}
                   >
-                    <SelectTrigger className="h-12 border-2 hover:border-secondary transition-colors">
-                      <SelectValue placeholder="Any available doctor" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {doctors.length === 0 ? (
-                        <div className="p-3 text-sm text-muted-foreground">
-                          No doctors available in this department
-                        </div>
-                      ) : (
-                        doctors.map((doctor) => (
-                          <SelectItem key={doctor.id} value={doctor.id} className="py-3">
-                            <div className="flex flex-col">
-                              <span className="font-medium">
-                                Dr. {doctor.first_name} {doctor.last_name}
-                              </span>
+                    Show All Doctors
+                  </Button>
+                )}
+              </div>
+              {loadingDoctors ? (
+                <div className="p-4 border rounded-xl bg-muted/30 flex items-center justify-center">
+                  <p className="text-sm text-muted-foreground">Loading doctors...</p>
+                </div>
+              ) : bookingForm.department_id || doctors.length > 0 ? (
+                <Select
+                  value={bookingForm.doctor_id}
+                  onValueChange={(value) => setBookingForm({ ...bookingForm, doctor_id: value })}
+                >
+                  <SelectTrigger className="h-12 border-2 hover:border-secondary transition-colors">
+                    <SelectValue placeholder="Any available doctor" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[400px]">
+                    {doctors.length === 0 ? (
+                      <div className="p-3 text-sm text-muted-foreground">
+                        No doctors available in this department
+                      </div>
+                    ) : (
+                      doctors.map((doctor) => (
+                        <SelectItem key={doctor.id} value={doctor.id} className="py-3">
+                          <div className="flex flex-col">
+                            <span className="font-medium">
+                              Dr. {doctor.first_name} {doctor.last_name}
+                            </span>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
                               {doctor.specialization && (
-                                <span className="text-xs text-muted-foreground">{doctor.specialization}</span>
+                                <span>{doctor.specialization}</span>
+                              )}
+                              {doctor.department?.name && (
+                                <>
+                                  <span>•</span>
+                                  <span>{doctor.department.name}</span>
+                                </>
                               )}
                             </div>
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
-                )}
-              </motion.div>
-            )}
+                          </div>
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <div className="p-4 border rounded-xl bg-muted/30">
+                  <p className="text-sm text-muted-foreground">Select a department first, or click "Show All Doctors"</p>
+                </div>
+              )}
+            </motion.div>
 
             {/* Appointment Type */}
             <motion.div
@@ -1704,6 +1999,87 @@ const PatientDashboard = () => {
             >
               <FileText className="w-4 h-4 mr-2" />
               Print Record
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Prescription Refill Request Modal */}
+      <Dialog open={showRefillRequest} onOpenChange={setShowRefillRequest}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <div className="flex items-center justify-center mb-4">
+              <div className="relative">
+                <div className="absolute inset-0 bg-secondary/30 rounded-full blur-xl"></div>
+                <div className="relative w-16 h-16 bg-gradient-to-br from-secondary to-secondary/70 rounded-full flex items-center justify-center luxury-shadow">
+                  <Pill className="w-8 h-8 text-white" />
+                </div>
+              </div>
+            </div>
+            <DialogTitle className="text-center text-2xl font-bold">Request Prescription Refill</DialogTitle>
+            <DialogDescription className="text-center">
+              Submit a refill request to your doctor
+            </DialogDescription>
+          </DialogHeader>
+          {selectedPrescription && (
+            <div className="space-y-4 py-4">
+              <div className="p-4 rounded-xl bg-muted/30 border">
+                <h4 className="font-semibold mb-2">Prescription Details</h4>
+                <div className="space-y-2 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Prescription Number:</span>
+                    <span className="ml-2 font-medium">{selectedPrescription.prescription_number}</span>
+                  </div>
+                  {selectedPrescription.prescription_items && selectedPrescription.prescription_items.length > 0 && (
+                    <div>
+                      <span className="text-muted-foreground">Medications:</span>
+                      <ul className="ml-2 mt-1">
+                        {selectedPrescription.prescription_items.map((item: any, idx: number) => (
+                          <li key={idx} className="font-medium">
+                            • {item.medication_name} {item.dosage}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  <div>
+                    <span className="text-muted-foreground">Refills Remaining:</span>
+                    <span className="ml-2 font-medium">{selectedPrescription.refills_allowed}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-xl bg-accent/10 border border-accent/20">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="w-5 h-5 text-accent mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h5 className="font-semibold text-accent mb-1">Important</h5>
+                    <p className="text-xs text-muted-foreground">
+                      Your refill request will be sent to your prescribing doctor for approval.
+                      You'll be notified once it's been reviewed. This typically takes 1-2 business days.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          <div className="flex gap-3 pt-4 border-t">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowRefillRequest(false);
+                setSelectedPrescription(null);
+              }}
+              className="flex-1 btn-press hover-lift"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleRequestRefill}
+              className="flex-1 gradient-royal btn-press hover-lift"
+            >
+              <Pill className="w-4 h-4 mr-2" />
+              Submit Request
             </Button>
           </div>
         </DialogContent>

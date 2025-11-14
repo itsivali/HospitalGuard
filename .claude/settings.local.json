@@ -14,7 +14,10 @@
       "mcp__ide__getDiagnostics",
       "Bash(npx supabase db remote-backup:*)",
       "Bash(npm run build:dev:*)",
-      "Bash(where:*)"
+      "Bash(where:*)",
+      "Bash(powershell -Command \"(Get-Content hospital-seed.sql) -replace '', patient_care_type'', '''' -replace '', ''''both'''''', '''' -replace '', ''''outpatient'''''', '''' -replace '', ''''inpatient'''''', '''' | Set-Content hospital-seed-fixed.sql\")",
+      "Bash(python fix-seed.py:*)",
+      "Bash(copy:*)"
     ],
     "deny": [],
     "ask": []

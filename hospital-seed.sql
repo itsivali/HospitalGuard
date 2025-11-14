@@ -42,37 +42,37 @@ ON CONFLICT (name) DO UPDATE SET
 -- EMERGENCY DEPARTMENT STAFF
 -- ============================================================================
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Michael', 'Chen', 'michael.chen@hospitalguard.com', '+1-555-1001', 'doctor', 'Emergency Medicine', 'MD-EM-001', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Michael', 'Chen', 'michael.chen@hospitalguard.com', '+1-555-1001', 'doctor', 'Emergency Medicine', 'MD-EM-001', id, true
 FROM departments WHERE name = 'Emergency'
 ON CONFLICT (email) DO UPDATE SET
   first_name = EXCLUDED.first_name,
   last_name = EXCLUDED.last_name,
   department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Sarah', 'Williams', 'sarah.williams@hospitalguard.com', '+1-555-1002', 'doctor', 'Emergency Medicine', 'MD-EM-002', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Sarah', 'Williams', 'sarah.williams@hospitalguard.com', '+1-555-1002', 'doctor', 'Emergency Medicine', 'MD-EM-002', id, true
 FROM departments WHERE name = 'Emergency'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'James', 'Martinez', 'james.martinez@hospitalguard.com', '+1-555-1003', 'doctor', 'Trauma Surgery', 'MD-EM-003', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'James', 'Martinez', 'james.martinez@hospitalguard.com', '+1-555-1003', 'doctor', 'Trauma Surgery', 'MD-EM-003', id, true
 FROM departments WHERE name = 'Emergency'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Emily', 'Johnson', 'emily.johnson@hospitalguard.com', '+1-555-1004', 'doctor', 'Emergency Medicine', 'MD-EM-004', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Emily', 'Johnson', 'emily.johnson@hospitalguard.com', '+1-555-1004', 'doctor', 'Emergency Medicine', 'MD-EM-004', id, true
 FROM departments WHERE name = 'Emergency'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
 -- Emergency Nurses
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Jennifer', 'Davis', 'jennifer.davis@hospitalguard.com', '+1-555-1005', 'nurse', 'Emergency Nursing', 'RN-EM-001', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Jennifer', 'Davis', 'jennifer.davis@hospitalguard.com', '+1-555-1005', 'nurse', 'Emergency Nursing', 'RN-EM-001', id, true
 FROM departments WHERE name = 'Emergency'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Robert', 'Brown', 'robert.brown@hospitalguard.com', '+1-555-1006', 'nurse', 'Trauma Nursing', 'RN-EM-002', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Robert', 'Brown', 'robert.brown@hospitalguard.com', '+1-555-1006', 'nurse', 'Trauma Nursing', 'RN-EM-002', id, true
 FROM departments WHERE name = 'Emergency'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
@@ -80,29 +80,29 @@ ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 -- ICU STAFF
 -- ============================================================================
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'David', 'Anderson', 'david.anderson@hospitalguard.com', '+1-555-2001', 'doctor', 'Critical Care Medicine', 'MD-ICU-001', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'David', 'Anderson', 'david.anderson@hospitalguard.com', '+1-555-2001', 'doctor', 'Critical Care Medicine', 'MD-ICU-001', id, true
 FROM departments WHERE name = 'Intensive Care Unit (ICU)'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Lisa', 'Thompson', 'lisa.thompson@hospitalguard.com', '+1-555-2002', 'doctor', 'Pulmonology & Critical Care', 'MD-ICU-002', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Lisa', 'Thompson', 'lisa.thompson@hospitalguard.com', '+1-555-2002', 'doctor', 'Pulmonology & Critical Care', 'MD-ICU-002', id, true
 FROM departments WHERE name = 'Intensive Care Unit (ICU)'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Mark', 'Garcia', 'mark.garcia@hospitalguard.com', '+1-555-2003', 'doctor', 'Critical Care Medicine', 'MD-ICU-003', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Mark', 'Garcia', 'mark.garcia@hospitalguard.com', '+1-555-2003', 'doctor', 'Critical Care Medicine', 'MD-ICU-003', id, true
 FROM departments WHERE name = 'Intensive Care Unit (ICU)'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
 -- ICU Nurses
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Amanda', 'Wilson', 'amanda.wilson@hospitalguard.com', '+1-555-2004', 'nurse', 'Critical Care Nursing', 'RN-ICU-001', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Amanda', 'Wilson', 'amanda.wilson@hospitalguard.com', '+1-555-2004', 'nurse', 'Critical Care Nursing', 'RN-ICU-001', id, true
 FROM departments WHERE name = 'Intensive Care Unit (ICU)'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Christopher', 'Lee', 'christopher.lee@hospitalguard.com', '+1-555-2005', 'nurse', 'Critical Care Nursing', 'RN-ICU-002', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Christopher', 'Lee', 'christopher.lee@hospitalguard.com', '+1-555-2005', 'nurse', 'Critical Care Nursing', 'RN-ICU-002', id, true
 FROM departments WHERE name = 'Intensive Care Unit (ICU)'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
@@ -110,23 +110,23 @@ ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 -- OUTPATIENT STAFF
 -- ============================================================================
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Jessica', 'Moore', 'jessica.moore@hospitalguard.com', '+1-555-3001', 'doctor', 'General Practice', 'MD-OP-001', id, 'outpatient', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Jessica', 'Moore', 'jessica.moore@hospitalguard.com', '+1-555-3001', 'doctor', 'General Practice', 'MD-OP-001', id, true
 FROM departments WHERE name = 'Outpatient'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Daniel', 'Taylor', 'daniel.taylor@hospitalguard.com', '+1-555-3002', 'doctor', 'Internal Medicine', 'MD-OP-002', id, 'outpatient', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Daniel', 'Taylor', 'daniel.taylor@hospitalguard.com', '+1-555-3002', 'doctor', 'Internal Medicine', 'MD-OP-002', id, true
 FROM departments WHERE name = 'Outpatient'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Rachel', 'White', 'rachel.white@hospitalguard.com', '+1-555-3003', 'doctor', 'Family Medicine', 'MD-OP-003', id, 'outpatient', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Rachel', 'White', 'rachel.white@hospitalguard.com', '+1-555-3003', 'doctor', 'Family Medicine', 'MD-OP-003', id, true
 FROM departments WHERE name = 'Outpatient'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Kevin', 'Harris', 'kevin.harris@hospitalguard.com', '+1-555-3004', 'doctor', 'General Practice', 'MD-OP-004', id, 'outpatient', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Kevin', 'Harris', 'kevin.harris@hospitalguard.com', '+1-555-3004', 'doctor', 'General Practice', 'MD-OP-004', id, true
 FROM departments WHERE name = 'Outpatient'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
@@ -134,34 +134,34 @@ ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 -- SURGERY STAFF
 -- ============================================================================
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Richard', 'Clark', 'richard.clark@hospitalguard.com', '+1-555-4001', 'doctor', 'General Surgery', 'MD-SG-001', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Richard', 'Clark', 'richard.clark@hospitalguard.com', '+1-555-4001', 'doctor', 'General Surgery', 'MD-SG-001', id, true
 FROM departments WHERE name = 'Surgery'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Patricia', 'Lewis', 'patricia.lewis@hospitalguard.com', '+1-555-4002', 'doctor', 'Cardiothoracic Surgery', 'MD-SG-002', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Patricia', 'Lewis', 'patricia.lewis@hospitalguard.com', '+1-555-4002', 'doctor', 'Cardiothoracic Surgery', 'MD-SG-002', id, true
 FROM departments WHERE name = 'Surgery'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Thomas', 'Walker', 'thomas.walker@hospitalguard.com', '+1-555-4003', 'doctor', 'Neurosurgery', 'MD-SG-003', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Thomas', 'Walker', 'thomas.walker@hospitalguard.com', '+1-555-4003', 'doctor', 'Neurosurgery', 'MD-SG-003', id, true
 FROM departments WHERE name = 'Surgery'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Michelle', 'Hall', 'michelle.hall@hospitalguard.com', '+1-555-4004', 'doctor', 'Orthopedic Surgery', 'MD-SG-004', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Michelle', 'Hall', 'michelle.hall@hospitalguard.com', '+1-555-4004', 'doctor', 'Orthopedic Surgery', 'MD-SG-004', id, true
 FROM departments WHERE name = 'Surgery'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Steven', 'Allen', 'steven.allen@hospitalguard.com', '+1-555-4005', 'doctor', 'Vascular Surgery', 'MD-SG-005', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Steven', 'Allen', 'steven.allen@hospitalguard.com', '+1-555-4005', 'doctor', 'Vascular Surgery', 'MD-SG-005', id, true
 FROM departments WHERE name = 'Surgery'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
 -- Surgical Nurses
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Nicole', 'Young', 'nicole.young@hospitalguard.com', '+1-555-4006', 'nurse', 'Perioperative Nursing', 'RN-SG-001', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Nicole', 'Young', 'nicole.young@hospitalguard.com', '+1-555-4006', 'nurse', 'Perioperative Nursing', 'RN-SG-001', id, true
 FROM departments WHERE name = 'Surgery'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
@@ -169,29 +169,29 @@ ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 -- MATERNITY STAFF
 -- ============================================================================
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Catherine', 'King', 'catherine.king@hospitalguard.com', '+1-555-5001', 'obstetrician', 'Obstetrics & Gynecology', 'MD-OB-001', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Catherine', 'King', 'catherine.king@hospitalguard.com', '+1-555-5001', 'obstetrician', 'Obstetrics & Gynecology', 'MD-OB-001', id, true
 FROM departments WHERE name = 'Maternity'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Andrew', 'Wright', 'andrew.wright@hospitalguard.com', '+1-555-5002', 'obstetrician', 'Maternal-Fetal Medicine', 'MD-OB-002', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Andrew', 'Wright', 'andrew.wright@hospitalguard.com', '+1-555-5002', 'obstetrician', 'Maternal-Fetal Medicine', 'MD-OB-002', id, true
 FROM departments WHERE name = 'Maternity'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Maria', 'Lopez', 'maria.lopez@hospitalguard.com', '+1-555-5003', 'obstetrician', 'Obstetrics & Gynecology', 'MD-OB-003', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Maria', 'Lopez', 'maria.lopez@hospitalguard.com', '+1-555-5003', 'obstetrician', 'Obstetrics & Gynecology', 'MD-OB-003', id, true
 FROM departments WHERE name = 'Maternity'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
 -- Maternity Nurses
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Karen', 'Scott', 'karen.scott@hospitalguard.com', '+1-555-5004', 'nurse', 'Labor & Delivery', 'RN-OB-001', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Karen', 'Scott', 'karen.scott@hospitalguard.com', '+1-555-5004', 'nurse', 'Labor & Delivery', 'RN-OB-001', id, true
 FROM departments WHERE name = 'Maternity'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Donna', 'Green', 'donna.green@hospitalguard.com', '+1-555-5005', 'nurse', 'Neonatal Nursing', 'RN-OB-002', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Donna', 'Green', 'donna.green@hospitalguard.com', '+1-555-5005', 'nurse', 'Neonatal Nursing', 'RN-OB-002', id, true
 FROM departments WHERE name = 'Maternity'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
@@ -199,24 +199,24 @@ ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 -- PEDIATRICS STAFF
 -- ============================================================================
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Laura', 'Adams', 'laura.adams@hospitalguard.com', '+1-555-6001', 'doctor', 'Pediatrics', 'MD-PD-001', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Laura', 'Adams', 'laura.adams@hospitalguard.com', '+1-555-6001', 'doctor', 'Pediatrics', 'MD-PD-001', id, true
 FROM departments WHERE name = 'Pediatrics'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Brian', 'Baker', 'brian.baker@hospitalguard.com', '+1-555-6002', 'doctor', 'Pediatric Emergency Medicine', 'MD-PD-002', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Brian', 'Baker', 'brian.baker@hospitalguard.com', '+1-555-6002', 'doctor', 'Pediatric Emergency Medicine', 'MD-PD-002', id, true
 FROM departments WHERE name = 'Pediatrics'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Angela', 'Nelson', 'angela.nelson@hospitalguard.com', '+1-555-6003', 'doctor', 'Pediatrics', 'MD-PD-003', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Angela', 'Nelson', 'angela.nelson@hospitalguard.com', '+1-555-6003', 'doctor', 'Pediatrics', 'MD-PD-003', id, true
 FROM departments WHERE name = 'Pediatrics'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
 -- Pediatric Nurses
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Melissa', 'Carter', 'melissa.carter@hospitalguard.com', '+1-555-6004', 'nurse', 'Pediatric Nursing', 'RN-PD-001', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Melissa', 'Carter', 'melissa.carter@hospitalguard.com', '+1-555-6004', 'nurse', 'Pediatric Nursing', 'RN-PD-001', id, true
 FROM departments WHERE name = 'Pediatrics'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
@@ -224,24 +224,24 @@ ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 -- MENTAL HEALTH STAFF
 -- ============================================================================
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Jonathan', 'Mitchell', 'jonathan.mitchell@hospitalguard.com', '+1-555-7001', 'psychiatrist', 'General Psychiatry', 'MD-PSY-001', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Jonathan', 'Mitchell', 'jonathan.mitchell@hospitalguard.com', '+1-555-7001', 'psychiatrist', 'General Psychiatry', 'MD-PSY-001', id, true
 FROM departments WHERE name = 'Mental Health'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Elizabeth', 'Perez', 'elizabeth.perez@hospitalguard.com', '+1-555-7002', 'psychiatrist', 'Child & Adolescent Psychiatry', 'MD-PSY-002', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Elizabeth', 'Perez', 'elizabeth.perez@hospitalguard.com', '+1-555-7002', 'psychiatrist', 'Child & Adolescent Psychiatry', 'MD-PSY-002', id, true
 FROM departments WHERE name = 'Mental Health'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Anthony', 'Roberts', 'anthony.roberts@hospitalguard.com', '+1-555-7003', 'psychiatrist', 'Addiction Psychiatry', 'MD-PSY-003', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Anthony', 'Roberts', 'anthony.roberts@hospitalguard.com', '+1-555-7003', 'psychiatrist', 'Addiction Psychiatry', 'MD-PSY-003', id, true
 FROM departments WHERE name = 'Mental Health'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
 -- Mental Health Nurses
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Sandra', 'Turner', 'sandra.turner@hospitalguard.com', '+1-555-7004', 'nurse', 'Psychiatric Nursing', 'RN-PSY-001', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Sandra', 'Turner', 'sandra.turner@hospitalguard.com', '+1-555-7004', 'nurse', 'Psychiatric Nursing', 'RN-PSY-001', id, true
 FROM departments WHERE name = 'Mental Health'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
@@ -249,18 +249,18 @@ ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 -- CARDIOLOGY STAFF
 -- ============================================================================
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'William', 'Phillips', 'william.phillips@hospitalguard.com', '+1-555-8001', 'doctor', 'Cardiology', 'MD-CAR-001', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'William', 'Phillips', 'william.phillips@hospitalguard.com', '+1-555-8001', 'doctor', 'Cardiology', 'MD-CAR-001', id, true
 FROM departments WHERE name = 'Cardiology'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Nancy', 'Campbell', 'nancy.campbell@hospitalguard.com', '+1-555-8002', 'doctor', 'Interventional Cardiology', 'MD-CAR-002', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Nancy', 'Campbell', 'nancy.campbell@hospitalguard.com', '+1-555-8002', 'doctor', 'Interventional Cardiology', 'MD-CAR-002', id, true
 FROM departments WHERE name = 'Cardiology'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'George', 'Parker', 'george.parker@hospitalguard.com', '+1-555-8003', 'doctor', 'Electrophysiology', 'MD-CAR-003', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'George', 'Parker', 'george.parker@hospitalguard.com', '+1-555-8003', 'doctor', 'Electrophysiology', 'MD-CAR-003', id, true
 FROM departments WHERE name = 'Cardiology'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
@@ -268,18 +268,18 @@ ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 -- NEUROLOGY STAFF
 -- ============================================================================
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Barbara', 'Evans', 'barbara.evans@hospitalguard.com', '+1-555-9001', 'doctor', 'Neurology', 'MD-NEU-001', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Barbara', 'Evans', 'barbara.evans@hospitalguard.com', '+1-555-9001', 'doctor', 'Neurology', 'MD-NEU-001', id, true
 FROM departments WHERE name = 'Neurology'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Paul', 'Edwards', 'paul.edwards@hospitalguard.com', '+1-555-9002', 'doctor', 'Stroke & Vascular Neurology', 'MD-NEU-002', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Paul', 'Edwards', 'paul.edwards@hospitalguard.com', '+1-555-9002', 'doctor', 'Stroke & Vascular Neurology', 'MD-NEU-002', id, true
 FROM departments WHERE name = 'Neurology'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Helen', 'Collins', 'helen.collins@hospitalguard.com', '+1-555-9003', 'doctor', 'Neurology', 'MD-NEU-003', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Helen', 'Collins', 'helen.collins@hospitalguard.com', '+1-555-9003', 'doctor', 'Neurology', 'MD-NEU-003', id, true
 FROM departments WHERE name = 'Neurology'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
@@ -287,18 +287,18 @@ ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 -- ORTHOPEDICS STAFF
 -- ============================================================================
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Charles', 'Stewart', 'charles.stewart@hospitalguard.com', '+1-555-1101', 'doctor', 'Orthopedic Surgery', 'MD-ORT-001', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Charles', 'Stewart', 'charles.stewart@hospitalguard.com', '+1-555-1101', 'doctor', 'Orthopedic Surgery', 'MD-ORT-001', id, true
 FROM departments WHERE name = 'Orthopedics'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Margaret', 'Sanchez', 'margaret.sanchez@hospitalguard.com', '+1-555-1102', 'doctor', 'Sports Medicine', 'MD-ORT-002', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Margaret', 'Sanchez', 'margaret.sanchez@hospitalguard.com', '+1-555-1102', 'doctor', 'Sports Medicine', 'MD-ORT-002', id, true
 FROM departments WHERE name = 'Orthopedics'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Joseph', 'Morris', 'joseph.morris@hospitalguard.com', '+1-555-1103', 'doctor', 'Joint Replacement', 'MD-ORT-003', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Joseph', 'Morris', 'joseph.morris@hospitalguard.com', '+1-555-1103', 'doctor', 'Joint Replacement', 'MD-ORT-003', id, true
 FROM departments WHERE name = 'Orthopedics'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
@@ -306,18 +306,18 @@ ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 -- ONCOLOGY STAFF
 -- ============================================================================
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Susan', 'Rogers', 'susan.rogers@hospitalguard.com', '+1-555-1201', 'doctor', 'Medical Oncology', 'MD-ONC-001', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Susan', 'Rogers', 'susan.rogers@hospitalguard.com', '+1-555-1201', 'doctor', 'Medical Oncology', 'MD-ONC-001', id, true
 FROM departments WHERE name = 'Oncology'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Donald', 'Reed', 'donald.reed@hospitalguard.com', '+1-555-1202', 'doctor', 'Radiation Oncology', 'MD-ONC-002', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Donald', 'Reed', 'donald.reed@hospitalguard.com', '+1-555-1202', 'doctor', 'Radiation Oncology', 'MD-ONC-002', id, true
 FROM departments WHERE name = 'Oncology'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Carol', 'Cook', 'carol.cook@hospitalguard.com', '+1-555-1203', 'doctor', 'Surgical Oncology', 'MD-ONC-003', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Carol', 'Cook', 'carol.cook@hospitalguard.com', '+1-555-1203', 'doctor', 'Surgical Oncology', 'MD-ONC-003', id, true
 FROM departments WHERE name = 'Oncology'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
@@ -325,23 +325,23 @@ ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 -- LABORATORY STAFF
 -- ============================================================================
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Timothy', 'Morgan', 'timothy.morgan@hospitalguard.com', '+1-555-1301', 'lab_tech', 'Clinical Laboratory Science', 'MLT-001', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Timothy', 'Morgan', 'timothy.morgan@hospitalguard.com', '+1-555-1301', 'lab_tech', 'Clinical Laboratory Science', 'MLT-001', id, true
 FROM departments WHERE name = 'Laboratory'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Betty', 'Bell', 'betty.bell@hospitalguard.com', '+1-555-1302', 'lab_tech', 'Hematology', 'MLT-002', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Betty', 'Bell', 'betty.bell@hospitalguard.com', '+1-555-1302', 'lab_tech', 'Hematology', 'MLT-002', id, true
 FROM departments WHERE name = 'Laboratory'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Jason', 'Murphy', 'jason.murphy@hospitalguard.com', '+1-555-1303', 'lab_tech', 'Microbiology', 'MLT-003', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Jason', 'Murphy', 'jason.murphy@hospitalguard.com', '+1-555-1303', 'lab_tech', 'Microbiology', 'MLT-003', id, true
 FROM departments WHERE name = 'Laboratory'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Dorothy', 'Bailey', 'dorothy.bailey@hospitalguard.com', '+1-555-1304', 'lab_tech', 'Chemistry', 'MLT-004', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Dorothy', 'Bailey', 'dorothy.bailey@hospitalguard.com', '+1-555-1304', 'lab_tech', 'Chemistry', 'MLT-004', id, true
 FROM departments WHERE name = 'Laboratory'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
@@ -349,18 +349,18 @@ ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 -- RADIOLOGY STAFF
 -- ============================================================================
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Ryan', 'Rivera', 'ryan.rivera@hospitalguard.com', '+1-555-1401', 'radiologist', 'Diagnostic Radiology', 'MD-RAD-001', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Ryan', 'Rivera', 'ryan.rivera@hospitalguard.com', '+1-555-1401', 'radiologist', 'Diagnostic Radiology', 'MD-RAD-001', id, true
 FROM departments WHERE name = 'Radiology'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Deborah', 'Cooper', 'deborah.cooper@hospitalguard.com', '+1-555-1402', 'radiologist', 'Interventional Radiology', 'MD-RAD-002', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Deborah', 'Cooper', 'deborah.cooper@hospitalguard.com', '+1-555-1402', 'radiologist', 'Interventional Radiology', 'MD-RAD-002', id, true
 FROM departments WHERE name = 'Radiology'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Brandon', 'Richardson', 'brandon.richardson@hospitalguard.com', '+1-555-1403', 'radiologist', 'Neuroradiology', 'MD-RAD-003', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Brandon', 'Richardson', 'brandon.richardson@hospitalguard.com', '+1-555-1403', 'radiologist', 'Neuroradiology', 'MD-RAD-003', id, true
 FROM departments WHERE name = 'Radiology'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
@@ -368,23 +368,23 @@ ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 -- PHARMACY STAFF
 -- ============================================================================
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Amy', 'Cox', 'amy.cox@hospitalguard.com', '+1-555-1501', 'pharmacist', 'Clinical Pharmacy', 'RPH-001', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Amy', 'Cox', 'amy.cox@hospitalguard.com', '+1-555-1501', 'pharmacist', 'Clinical Pharmacy', 'RPH-001', id, true
 FROM departments WHERE name = 'Pharmacy'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Adam', 'Howard', 'adam.howard@hospitalguard.com', '+1-555-1502', 'pharmacist', 'Hospital Pharmacy', 'RPH-002', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Adam', 'Howard', 'adam.howard@hospitalguard.com', '+1-555-1502', 'pharmacist', 'Hospital Pharmacy', 'RPH-002', id, true
 FROM departments WHERE name = 'Pharmacy'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Stephanie', 'Ward', 'stephanie.ward@hospitalguard.com', '+1-555-1503', 'pharmacist', 'Oncology Pharmacy', 'RPH-003', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Stephanie', 'Ward', 'stephanie.ward@hospitalguard.com', '+1-555-1503', 'pharmacist', 'Oncology Pharmacy', 'RPH-003', id, true
 FROM departments WHERE name = 'Pharmacy'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Benjamin', 'Torres', 'benjamin.torres@hospitalguard.com', '+1-555-1504', 'pharmacist', 'Critical Care Pharmacy', 'RPH-004', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Benjamin', 'Torres', 'benjamin.torres@hospitalguard.com', '+1-555-1504', 'pharmacist', 'Critical Care Pharmacy', 'RPH-004', id, true
 FROM departments WHERE name = 'Pharmacy'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
@@ -393,57 +393,57 @@ ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 -- ============================================================================
 
 -- Nephrology
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Rebecca', 'Peterson', 'rebecca.peterson@hospitalguard.com', '+1-555-1601', 'doctor', 'Nephrology', 'MD-NEP-001', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Rebecca', 'Peterson', 'rebecca.peterson@hospitalguard.com', '+1-555-1601', 'doctor', 'Nephrology', 'MD-NEP-001', id, true
 FROM departments WHERE name = 'Nephrology'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Eric', 'Gray', 'eric.gray@hospitalguard.com', '+1-555-1602', 'doctor', 'Nephrology & Dialysis', 'MD-NEP-002', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Eric', 'Gray', 'eric.gray@hospitalguard.com', '+1-555-1602', 'doctor', 'Nephrology & Dialysis', 'MD-NEP-002', id, true
 FROM departments WHERE name = 'Nephrology'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
 -- Gastroenterology
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Christine', 'Ramirez', 'christine.ramirez@hospitalguard.com', '+1-555-1701', 'doctor', 'Gastroenterology', 'MD-GAS-001', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Christine', 'Ramirez', 'christine.ramirez@hospitalguard.com', '+1-555-1701', 'doctor', 'Gastroenterology', 'MD-GAS-001', id, true
 FROM departments WHERE name = 'Gastroenterology'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Peter', 'James', 'peter.james@hospitalguard.com', '+1-555-1702', 'doctor', 'Hepatology', 'MD-GAS-002', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Peter', 'James', 'peter.james@hospitalguard.com', '+1-555-1702', 'doctor', 'Hepatology', 'MD-GAS-002', id, true
 FROM departments WHERE name = 'Gastroenterology'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
 -- Pulmonology
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Samantha', 'Watson', 'samantha.watson@hospitalguard.com', '+1-555-1801', 'doctor', 'Pulmonology', 'MD-PUL-001', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Samantha', 'Watson', 'samantha.watson@hospitalguard.com', '+1-555-1801', 'doctor', 'Pulmonology', 'MD-PUL-001', id, true
 FROM departments WHERE name = 'Pulmonology'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Gary', 'Brooks', 'gary.brooks@hospitalguard.com', '+1-555-1802', 'doctor', 'Pulmonary Critical Care', 'MD-PUL-002', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Gary', 'Brooks', 'gary.brooks@hospitalguard.com', '+1-555-1802', 'doctor', 'Pulmonary Critical Care', 'MD-PUL-002', id, true
 FROM departments WHERE name = 'Pulmonology'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
 -- Endocrinology
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Julie', 'Kelly', 'julie.kelly@hospitalguard.com', '+1-555-1901', 'doctor', 'Endocrinology', 'MD-END-001', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Julie', 'Kelly', 'julie.kelly@hospitalguard.com', '+1-555-1901', 'doctor', 'Endocrinology', 'MD-END-001', id, true
 FROM departments WHERE name = 'Endocrinology'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Scott', 'Sanders', 'scott.sanders@hospitalguard.com', '+1-555-1902', 'doctor', 'Diabetes & Metabolism', 'MD-END-002', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Scott', 'Sanders', 'scott.sanders@hospitalguard.com', '+1-555-1902', 'doctor', 'Diabetes & Metabolism', 'MD-END-002', id, true
 FROM departments WHERE name = 'Endocrinology'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
 -- Dermatology
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Victoria', 'Price', 'victoria.price@hospitalguard.com', '+1-555-2001', 'doctor', 'Dermatology', 'MD-DER-001', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Victoria', 'Price', 'victoria.price@hospitalguard.com', '+1-555-2001', 'doctor', 'Dermatology', 'MD-DER-001', id, true
 FROM departments WHERE name = 'Dermatology'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Kyle', 'Bennett', 'kyle.bennett@hospitalguard.com', '+1-555-2002', 'doctor', 'Dermatopathology', 'MD-DER-002', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Kyle', 'Bennett', 'kyle.bennett@hospitalguard.com', '+1-555-2002', 'doctor', 'Dermatopathology', 'MD-DER-002', id, true
 FROM departments WHERE name = 'Dermatology'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
@@ -451,28 +451,28 @@ ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 -- ADMINISTRATIVE STAFF
 -- ============================================================================
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Hannah', 'Wood', 'hannah.wood@hospitalguard.com', '+1-555-9001', 'receptionist', 'Front Desk', 'ADM-001', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Hannah', 'Wood', 'hannah.wood@hospitalguard.com', '+1-555-9001', 'receptionist', 'Front Desk', 'ADM-001', id, true
 FROM departments WHERE name = 'Outpatient'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Tyler', 'Barnes', 'tyler.barnes@hospitalguard.com', '+1-555-9002', 'receptionist', 'Patient Registration', 'ADM-002', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Tyler', 'Barnes', 'tyler.barnes@hospitalguard.com', '+1-555-9002', 'receptionist', 'Patient Registration', 'ADM-002', id, true
 FROM departments WHERE name = 'Emergency'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Olivia', 'Ross', 'olivia.ross@hospitalguard.com', '+1-555-9101', 'billing', 'Medical Billing', 'BIL-001', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Olivia', 'Ross', 'olivia.ross@hospitalguard.com', '+1-555-9101', 'billing', 'Medical Billing', 'BIL-001', id, true
 FROM departments WHERE name = 'Billing'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Nathan', 'Henderson', 'nathan.henderson@hospitalguard.com', '+1-555-9102', 'billing', 'Insurance Processing', 'BIL-002', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Nathan', 'Henderson', 'nathan.henderson@hospitalguard.com', '+1-555-9102', 'billing', 'Insurance Processing', 'BIL-002', id, true
 FROM departments WHERE name = 'Billing'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
-INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, patient_care_type, is_active)
-SELECT 'Emma', 'Coleman', 'emma.coleman@hospitalguard.com', '+1-555-9103', 'billing', 'Financial Services', 'BIL-003', id, 'both', true
+INSERT INTO hospital_staff (first_name, last_name, email, phone, staff_type, specialization, license_number, department_id, is_active)
+SELECT 'Emma', 'Coleman', 'emma.coleman@hospitalguard.com', '+1-555-9103', 'billing', 'Financial Services', 'BIL-003', id, true
 FROM departments WHERE name = 'Billing'
 ON CONFLICT (email) DO UPDATE SET department_id = EXCLUDED.department_id;
 
