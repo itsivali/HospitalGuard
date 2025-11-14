@@ -104,7 +104,10 @@ const Dashboard = () => {
         const primaryRole = userRolesList[0];
 
         // Route to specific dashboards based on role
-        if (primaryRole === "patient") {
+        if (primaryRole === "admin") {
+          navigate("/admin-dashboard", { replace: true });
+          return;
+        } else if (primaryRole === "patient") {
           navigate("/patient-dashboard", { replace: true });
           return;
         } else if (primaryRole === "doctor") {
@@ -120,7 +123,7 @@ const Dashboard = () => {
           navigate("/billing-dashboard", { replace: true });
           return;
         }
-        // For other roles (admin, lab_tech, radiologist, etc.), stay on general dashboard
+        // For other roles (lab_tech, radiologist, etc.), stay on general dashboard
       }
     } catch (error: unknown) {
       console.error("Auth check error:", error);

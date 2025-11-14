@@ -148,4 +148,3 @@ ON CONFLICT (user_id, role) DO NOTHING;
 
 ## Quick Setup Script
 
-I'll create a Node.js script to automate account creation...
