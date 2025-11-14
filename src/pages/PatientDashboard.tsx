@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -30,29 +30,44 @@ import {
   CheckCircle2
 } from "lucide-react";
 
+interface Department { id: string; name: string; }
+interface Doctor { id: string; first_name: string; last_name: string; specialization?: string; email?: string; department_id?: string; department?: Department; }
+interface PrescriptionItem { medication_name: string; dosage?: string; frequency?: string; }
+interface Prescription { id: string; prescription_number: string; status: string; refills_allowed: number; valid_until?: string; prescription_items?: PrescriptionItem[]; }
+interface MedicalRecord { id: string; title: string; record_type?: string; created_at: string; department?: Department; doctor?: Doctor; description?: string; notes?: string; is_confidential?: boolean; }
+interface LabOrderResults { interpretation?: string; reference_ranges?: Record<string, string>;[key: string]: unknown; }
+interface LabOrder { id: string; test_type: string; order_number: string; status: string; created_at: string; results_available_at?: string; results?: LabOrderResults; }
+interface Appointment { id: string; scheduled_time: string; appointment_type?: string; doctor?: Doctor; department?: Department; status: string; reason?: string; }
+interface PatientVisit { id: string; visit_number: string; status: string; chief_complaint?: string; check_in_time: string; attending_doctor?: Doctor; department?: Department; }
+interface Patient { id: string; first_name: string; last_name: string; email: string; user_id: string; date_of_birth?: string; blood_type?: string; gender?: string; allergies?: string[]; }
+
+interface SupaUser { id: string; user_metadata?: Record<string, unknown>; }
 const PatientDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<SupaUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [patientData, setPatientData] = useState<any>(null);
-  const [appointments, setAppointments] = useState<any[]>([]);
-  const [prescriptions, setPrescriptions] = useState<any[]>([]);
-  const [medicalRecords, setMedicalRecords] = useState<any[]>([]);
-  const [labOrders, setLabOrders] = useState<any[]>([]);
-  const [careTeam, setCareTeam] = useState<any[]>([]);
-  const [currentVisit, setCurrentVisit] = useState<any>(null);
+  const [patientData, setPatientData] = useState<Patient | null>(null);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
+  const [medicalRecords, setMedicalRecords] = useState<MedicalRecord[]>([]);
+  const [labOrders, setLabOrders] = useState<LabOrder[]>([]);
+  const [careTeam, setCareTeam] = useState<Doctor[]>([]);
+  const [currentVisit, setCurrentVisit] = useState<PatientVisit | null>(null);
   const [showBookAppointment, setShowBookAppointment] = useState(false);
   const [showAppointmentDetails, setShowAppointmentDetails] = useState(false);
-  const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [showLabResults, setShowLabResults] = useState(false);
-  const [selectedLabOrder, setSelectedLabOrder] = useState<any>(null);
+  const [selectedLabOrder, setSelectedLabOrder] = useState<LabOrder | null>(null);
   const [showMedicalHistory, setShowMedicalHistory] = useState(false);
-  const [selectedMedicalRecord, setSelectedMedicalRecord] = useState<any>(null);
+  const [selectedMedicalRecord, setSelectedMedicalRecord] = useState<MedicalRecord | null>(null);
   const [showRefillRequest, setShowRefillRequest] = useState(false);
-  const [selectedPrescription, setSelectedPrescription] = useState<any>(null);
-  const [departments, setDepartments] = useState<any[]>([]);
-  const [doctors, setDoctors] = useState<any[]>([]);
+  const [selectedPrescription, setSelectedPrescription] = useState<Prescription | null>(null);
+  const [showPrescriptionDetails, setShowPrescriptionDetails] = useState(false);
+  const [showAllAppointments, setShowAllAppointments] = useState(false);
+  const [showAllPrescriptions, setShowAllPrescriptions] = useState(false);
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [loadingDepartments, setLoadingDepartments] = useState(false);
   const [loadingDoctors, setLoadingDoctors] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>();
@@ -72,198 +87,108 @@ const PatientDashboard = () => {
   });
   const [assigningDoctor, setAssigningDoctor] = useState(false);
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          navigate("/auth");
-          return;
-        }
-        setUser(user);
-        await fetchPatientData(user.id);
-      } catch (error) {
-        console.error("Auth error:", error);
-        navigate("/auth");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    checkAuth();
-  }, [navigate]);
-
-  useEffect(() => {
-    if (showBookAppointment) {
-      fetchDepartments();
-    }
-  }, [showBookAppointment]);
-
-  useEffect(() => {
-    if (bookingForm.department_id) {
-      fetchDoctors(bookingForm.department_id);
-    }
-  }, [bookingForm.department_id]);
-
-  useEffect(() => {
-    if (showOnboarding) {
-      fetchDepartments();
-    }
-  }, [showOnboarding]);
-
-  const fetchPatientData = async (userId: string) => {
+  const fetchPatientData = useCallback(async (userId: string) => {
     try {
-      // Fetch patient record
-      const { data: patient, error: patientError } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: patient, error: patientError } = await (supabase as any)
         .from('patients')
         .select('*')
         .eq('user_id', userId)
         .single();
 
       if (patientError) throw patientError;
-      setPatientData(patient);
+      setPatientData(patient as Patient);
+      if (!patient) return;
 
-      // Onboarding is now handled during signup, so no need to check here
+      // Appointments (upcoming)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: appointmentsData } = await (supabase as any)
+        .from('appointments')
+        .select(`*, doctor:hospital_staff!appointments_doctor_id_fkey(first_name,last_name,specialization), department:departments(name)`)
+        .eq('patient_id', (patient as Patient).id)
+        .gte('scheduled_time', new Date().toISOString())
+        .order('scheduled_time', { ascending: true })
+        .limit(10);
+      setAppointments((appointmentsData || []) as Appointment[]);
 
-      if (patient) {
-        // Fetch appointments
-        const { data: appointmentsData } = await supabase
-          .from('appointments')
-          .select(`
-            *,
-            doctor:hospital_staff!appointments_doctor_id_fkey(first_name, last_name, specialization),
-            department:departments(name)
-          `)
-          .eq('patient_id', patient.id)
-          .gte('scheduled_time', new Date().toISOString())
-          .order('scheduled_time', { ascending: true })
-          .limit(10);
+      // Prescriptions (active / recent)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: prescriptionsData } = await (supabase as any)
+        .from('prescriptions')
+        .select(`*, prescription_items(*), doctor:hospital_staff(first_name,last_name)`)
+        .eq('patient_id', (patient as Patient).id)
+        .in('status', ['signed', 'partially_dispensed'])
+        .order('created_at', { ascending: false })
+        .limit(10);
+      setPrescriptions((prescriptionsData || []) as Prescription[]);
 
-        setAppointments(appointmentsData || []);
+      // Medical Records
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: recordsData } = await (supabase as any)
+        .from('medical_records')
+        .select(`*, doctor:hospital_staff(first_name,last_name), department:departments(name)`)
+        .eq('patient_id', (patient as Patient).id)
+        .order('created_at', { ascending: false })
+        .limit(10);
+      setMedicalRecords((recordsData || []) as MedicalRecord[]);
 
-        // Fetch prescriptions
-        const { data: prescriptionsData } = await supabase
-          .from('prescriptions')
-          .select(`
-            *,
-            prescription_items(*),
-            doctor:hospital_staff(first_name, last_name)
-          `)
-          .eq('patient_id', patient.id)
-          .in('status', ['signed', 'partially_dispensed'])
-          .order('created_at', { ascending: false })
-          .limit(10);
+      // Lab Orders (completed)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: labData } = await (supabase as any)
+        .from('lab_orders')
+        .select('*')
+        .eq('patient_id', (patient as Patient).id)
+        .eq('status', 'completed')
+        .order('created_at', { ascending: false })
+        .limit(5);
+      setLabOrders((labData || []) as LabOrder[]);
 
-        setPrescriptions(prescriptionsData || []);
+      // Current Visit (active status)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: currentVisitData } = await (supabase as any)
+        .from('patient_visits')
+        .select(`*, attending_doctor:hospital_staff!patient_visits_attending_doctor_id_fkey(id,first_name,last_name,specialization,email,department_id), department:departments(name)`)
+        .eq('patient_id', (patient as Patient).id)
+        .in('status', ['checked_in', 'in_triage', 'in_consultation', 'in_treatment'])
+        .order('check_in_time', { ascending: false })
+        .limit(1)
+        .single();
+      if (currentVisitData) setCurrentVisit(currentVisitData as PatientVisit);
 
-        // Fetch medical records
-        const { data: recordsData } = await supabase
-          .from('medical_records')
-          .select(`
-            *,
-            doctor:hospital_staff(first_name, last_name),
-            department:departments(name)
-          `)
-          .eq('patient_id', patient.id)
-          .order('created_at', { ascending: false })
-          .limit(10);
-
-        setMedicalRecords(recordsData || []);
-
-        // Fetch lab orders
-        const { data: labData } = await supabase
-          .from('lab_orders')
-          .select('*')
-          .eq('patient_id', patient.id)
-          .eq('status', 'completed')
-          .order('created_at', { ascending: false })
-          .limit(5);
-
-        setLabOrders(labData || []);
-
-        // Fetch current visit and attending doctor
-        const { data: currentVisitData, error: currentVisitError } = await supabase
-          .from('patient_visits')
-          .select(`
-            *,
-            attending_doctor:hospital_staff!patient_visits_attending_doctor_id_fkey(
-              id, first_name, last_name, specialization, email
-            ),
-            department:departments(name)
-          `)
-          .eq('patient_id', patient.id)
-          .in('status', ['checked_in', 'in_triage', 'in_consultation', 'in_treatment'])
-          .order('check_in_time', { ascending: false })
-          .limit(1)
-          .single();
-
-        if (currentVisitError) {
-          console.log('Current visit fetch (no active visit is normal):', currentVisitError.message);
-        }
-
-        if (currentVisitData) {
-          console.log('Current visit found:', currentVisitData);
-          setCurrentVisit(currentVisitData);
-        }
-
-        // Fetch care team (unique doctors from recent visits and medical records)
-        const { data: recentVisits, error: visitsError } = await supabase
-          .from('patient_visits')
-          .select(`
-            attending_doctor_id,
-            attending_doctor:hospital_staff!patient_visits_attending_doctor_id_fkey(
-              id, first_name, last_name, specialization, email
-            )
-          `)
-          .eq('patient_id', patient.id)
-          .not('attending_doctor_id', 'is', null)
-          .order('check_in_time', { ascending: false })
-          .limit(10);
-
-        if (visitsError) {
-          console.error('Error fetching visits for care team:', visitsError);
-        }
-
-        console.log('Recent visits data:', recentVisits);
-
-        // Extract unique doctors
-        const doctorsMap = new Map();
-        if (recentVisits && recentVisits.length > 0) {
-          recentVisits.forEach(visit => {
-            if (visit.attending_doctor && !doctorsMap.has(visit.attending_doctor.id)) {
-              doctorsMap.set(visit.attending_doctor.id, visit.attending_doctor);
-            }
-          });
-        }
-
-        const careTeamArray = Array.from(doctorsMap.values());
-        console.log('Care team extracted:', careTeamArray);
-        setCareTeam(careTeamArray);
-      }
-    } catch (error) {
-      console.error("Error fetching patient data:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load your medical information",
-        variant: "destructive"
+      // Care Team (recent unique doctors from visits)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: recentVisits } = await (supabase as any)
+        .from('patient_visits')
+        .select(`attending_doctor_id, attending_doctor:hospital_staff!patient_visits_attending_doctor_id_fkey(id,first_name,last_name,specialization,email,department_id)`)
+        .eq('patient_id', (patient as Patient).id)
+        .not('attending_doctor_id', 'is', null)
+        .order('check_in_time', { ascending: false })
+        .limit(10);
+      const doctorsMap = new Map<string, Doctor>();
+      (recentVisits || []).forEach((visit: { attending_doctor?: Doctor }) => {
+        const doc = visit.attending_doctor;
+        if (doc && !doctorsMap.has(doc.id)) doctorsMap.set(doc.id, doc);
       });
+      setCareTeam(Array.from(doctorsMap.values()));
+    } catch (error) {
+      console.error('Error fetching patient data:', error);
+      toast({ title: 'Error', description: 'Failed to load your medical information', variant: 'destructive' });
     }
-  };
+  }, [toast]);
 
-  const fetchDepartments = async () => {
+  // Moved fetchDepartments above effects to avoid "used before declaration" errors
+  const fetchDepartments = useCallback(async () => {
     try {
       setLoadingDepartments(true);
-      const { data, error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase as unknown as any)
         .from('departments')
         .select('id, name')
         .order('name');
 
       if (error) {
         console.error("Error fetching departments:", error);
-        toast({
-          title: "Info",
-          description: "Using default departments list",
-        });
-        // Use hardcoded departments if fetch fails
+        toast({ title: "Info", description: "Using default departments list" });
         setDepartments([
           { id: 'emergency', name: 'Emergency' },
           { id: 'outpatient', name: 'Outpatient' },
@@ -288,53 +213,68 @@ const PatientDashboard = () => {
     } finally {
       setLoadingDepartments(false);
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          navigate('/auth');
+          return;
+        }
+        await fetchPatientData(user.id);
+      } catch (error) {
+        console.error('Auth check failed', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    checkAuth();
+  }, [navigate, fetchPatientData]);
+
+  useEffect(() => {
+    if (showBookAppointment) {
+      fetchDepartments();
+      // Fetch all doctors (no department filter)
+      fetchDoctors('');
+    }
+  }, [showBookAppointment, fetchDepartments]);
+
+  useEffect(() => {
+    if (bookingForm.department_id) {
+      fetchDoctors(bookingForm.department_id);
+    }
+  }, [bookingForm.department_id]);
+
+  useEffect(() => {
+    if (showOnboarding) {
+      fetchDepartments();
+    }
+  }, [showOnboarding, fetchDepartments]);
 
   const fetchDoctors = async (departmentId: string) => {
     try {
       setLoadingDoctors(true);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let query = (supabase as any)
+        .from('hospital_staff')
+        .select('id, first_name, last_name, specialization, email, department_id')
+        .eq('is_active', true)
+        .eq('role', 'doctor')
+        .order('last_name');
       if (departmentId) {
-        // Fetch doctors for specific department
-        const { data, error } = await supabase
-          .from('hospital_staff')
-          .select(`
-            id,
-            first_name,
-            last_name,
-            specialization,
-            department:departments(id, name)
-          `)
-          .eq('department_id', departmentId)
-          .eq('staff_type', 'doctor')
-          .eq('is_active', true)
-          .order('last_name');
-
-        if (error) {
-          console.error("Error fetching doctors:", error);
-        }
-        setDoctors(data || []);
+        query = query.eq('department_id', departmentId);
+      }
+      const { data, error } = await query;
+      if (error) {
+        console.error('Error fetching doctors:', error);
+        setDoctors([]);
       } else {
-        // Fetch all doctors when no department is selected
-        const { data, error } = await supabase
-          .from('hospital_staff')
-          .select(`
-            id,
-            first_name,
-            last_name,
-            specialization,
-            department:departments(id, name)
-          `)
-          .eq('staff_type', 'doctor')
-          .eq('is_active', true)
-          .order('last_name');
-
-        if (error) {
-          console.error("Error fetching doctors:", error);
-        }
         setDoctors(data || []);
       }
     } catch (error) {
-      console.error("Exception fetching doctors:", error);
+      console.error('Exception fetching doctors:', error);
       setDoctors([]);
     } finally {
       setLoadingDoctors(false);
@@ -344,60 +284,40 @@ const PatientDashboard = () => {
   const handleBookAppointment = async () => {
     if (!patientData || !selectedDate || !selectedTime || !bookingForm.department_id) {
       toast({
-        title: "Error",
-        description: "Please fill in all required fields (Department, Date, and Time)",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Please fill in all required fields (Department, Date, and Time)',
+        variant: 'destructive'
       });
       return;
     }
-
     try {
-      // Combine date and time
       const [hours, minutes] = selectedTime.split(':');
       const scheduledDateTime = new Date(selectedDate);
       scheduledDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-
       const appointmentNumber = `APT-${Date.now()}`;
-
-      const { error } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase as any)
         .from('appointments')
         .insert({
           appointment_number: appointmentNumber,
           patient_id: patientData.id,
           doctor_id: bookingForm.doctor_id || null,
-          department_id: bookingForm.department_id || null,
+          department_id: bookingForm.department_id,
           appointment_type: bookingForm.appointment_type,
           scheduled_time: scheduledDateTime.toISOString(),
-          reason: bookingForm.reason,
-          status: 'scheduled'
+          reason: bookingForm.reason || null
         });
-
       if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Appointment booked successfully"
-      });
-
+      toast({ title: 'Success', description: 'Appointment booked successfully' });
       setShowBookAppointment(false);
       setSelectedDate(undefined);
       setSelectedTime('09:00');
-      setBookingForm({
-        department_id: '',
-        doctor_id: '',
-        appointment_type: 'consultation',
-        scheduled_time: '',
-        reason: ''
-      });
-
+      setBookingForm({ department_id: '', doctor_id: '', appointment_type: 'consultation', scheduled_time: '', reason: '' });
+      const { data: { user } } = await supabase.auth.getUser();
       if (user) await fetchPatientData(user.id);
     } catch (error) {
-      console.error("Error booking appointment:", error);
-      toast({
-        title: "Error",
-        description: "Failed to book appointment",
-        variant: "destructive"
-      });
+      console.error('Error booking appointment:', error);
+      toast({ title: 'Error', description: 'Failed to book appointment', variant: 'destructive' });
     }
   };
 
@@ -429,36 +349,29 @@ const PatientDashboard = () => {
 
   const handleOnboardingSubmit = async () => {
     if (!patientData || !onboardingForm.chief_complaint || !onboardingForm.department_id) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive"
-      });
+      toast({ title: 'Error', description: 'Please fill in all required fields', variant: 'destructive' });
       return;
     }
-
     try {
       setAssigningDoctor(true);
-
-      // Find an available doctor in the selected department
-      const { data: availableDoctors, error: doctorError } = await supabase
+      // Cast supabase for flexible table access (schema types not loaded here)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: availableDoctors, error: doctorError } = await (supabase as any)
         .from('hospital_staff')
-        .select('id, first_name, last_name, specialization')
+        .select('id, first_name, last_name, specialization, email, department_id')
         .eq('department_id', onboardingForm.department_id)
-        .eq('staff_type', 'doctor')
+        .eq('role', 'doctor')
         .eq('is_active', true)
-        .order('id'); // Random-ish selection
-
-      if (doctorError || !availableDoctors || availableDoctors.length === 0) {
-        throw new Error('No available doctors in this department');
+        .order('id');
+      if (doctorError) throw doctorError;
+      const assignedDoctor = (availableDoctors && availableDoctors.length > 0) ? availableDoctors[0] : null;
+      if (!assignedDoctor) {
+        toast({ title: 'No Doctor Available', description: 'No active doctor found for this department right now.' });
+        return;
       }
-
-      // Select the first available doctor (in production, you'd check their schedule)
-      const assignedDoctor = availableDoctors[0];
-
-      // Create a new visit record for this patient
       const visitNumber = `V-${Date.now()}`;
-      const { data: newVisit, error: visitError } = await supabase
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error: visitError } = await (supabase as any)
         .from('patient_visits')
         .insert({
           patient_id: patientData.id,
@@ -467,35 +380,20 @@ const PatientDashboard = () => {
           status: 'checked_in',
           chief_complaint: onboardingForm.chief_complaint,
           attending_doctor_id: assignedDoctor.id,
-          current_department_id: onboardingForm.department_id,
-          notes: onboardingForm.symptoms || null
-        })
-        .select()
-        .single();
-
+          current_department_id: onboardingForm.department_id
+        });
       if (visitError) throw visitError;
-
       toast({
-        title: "Doctor Assigned!",
-        description: `You've been assigned to Dr. ${assignedDoctor.first_name} ${assignedDoctor.last_name} (${assignedDoctor.specialization})`,
+        title: 'Doctor Assigned!',
+        description: `You've been assigned to Dr. ${assignedDoctor.first_name} ${assignedDoctor.last_name} (${assignedDoctor.specialization || 'Doctor'})`
       });
-
       setShowOnboarding(false);
-      setOnboardingForm({
-        chief_complaint: '',
-        symptoms: '',
-        department_id: ''
-      });
-
-      // Refresh patient data
+      setOnboardingForm({ chief_complaint: '', symptoms: '', department_id: '' });
+      const { data: { user } } = await supabase.auth.getUser();
       if (user) await fetchPatientData(user.id);
     } catch (error) {
-      console.error("Error assigning doctor:", error);
-      toast({
-        title: "Error",
-        description: "Failed to assign doctor. Please try again.",
-        variant: "destructive"
-      });
+      console.error('Error assigning doctor:', error);
+      toast({ title: 'Error', description: 'Failed to assign doctor. Please try again.', variant: 'destructive' });
     } finally {
       setAssigningDoctor(false);
     }
@@ -529,7 +427,9 @@ const PatientDashboard = () => {
             </div>
             <div>
               <h1 className="font-bold text-2xl tracking-tight">Patient Portal</h1>
-              <p className="text-xs text-muted-foreground">Welcome back, {user?.user_metadata?.full_name || 'Patient'}</p>
+              <p className="text-xs text-muted-foreground">
+                Welcome back, {patientData ? `${patientData.first_name} ${patientData.last_name}` : (typeof user?.user_metadata?.full_name === 'string' ? user?.user_metadata?.full_name : 'Patient')}
+              </p>
             </div>
           </div>
           <Button onClick={handleLogout} variant="outline" size="sm" className="btn-press hover-lift">
@@ -543,7 +443,10 @@ const PatientDashboard = () => {
         {/* Quick Stats */}
         <div className="grid gap-6 md:grid-cols-4 mb-8">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <Card className="hover-lift card-shadow bg-primary/5 border-primary/20">
+            <Card
+              className="hover-lift card-shadow bg-primary/5 border-primary/20 cursor-pointer transition-all hover:border-primary/40 hover:shadow-lg"
+              onClick={() => setShowAllAppointments(true)}
+            >
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center">
@@ -553,12 +456,16 @@ const PatientDashboard = () => {
                 </div>
                 <h3 className="text-2xl font-bold">{appointments.length}</h3>
                 <p className="text-sm text-muted-foreground">Appointments</p>
+                <p className="text-xs text-primary mt-2 font-medium">Click to manage →</p>
               </CardContent>
             </Card>
           </motion.div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            <Card className="hover-lift card-shadow bg-secondary/5 border-secondary/20">
+            <Card
+              className="hover-lift card-shadow bg-secondary/5 border-secondary/20 cursor-pointer transition-all hover:border-secondary/40 hover:shadow-lg"
+              onClick={() => setShowAllPrescriptions(true)}
+            >
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="w-12 h-12 bg-secondary/10 rounded-2xl flex items-center justify-center">
@@ -568,6 +475,7 @@ const PatientDashboard = () => {
                 </div>
                 <h3 className="text-2xl font-bold">{prescriptions.length}</h3>
                 <p className="text-sm text-muted-foreground">Prescriptions</p>
+                <p className="text-xs text-secondary mt-2 font-medium">Click to manage →</p>
               </CardContent>
             </Card>
           </motion.div>
@@ -604,62 +512,62 @@ const PatientDashboard = () => {
         </div>
 
         {/* Current Visit & Care Team */}
-        <div className={`grid gap-6 mb-6 ${currentVisit ? 'lg:grid-cols-2' : 'lg:grid-cols-1 max-w-2xl'}`}>
+        <div className={`grid gap - 6 mb - 6 ${currentVisit ? 'lg:grid-cols-2' : 'lg:grid-cols-1 max-w-2xl'}`}>
           {/* Current Visit Status */}
           {currentVisit && (
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-                <Card className="card-shadow hover-lift border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
-                  <CardHeader>
-                    <CardTitle className="text-xl flex items-center gap-2">
-                      <Hospital className="w-5 h-5 text-primary" />
-                      Current Visit
-                    </CardTitle>
-                    <CardDescription>You have an active hospital visit</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="p-4 rounded-xl bg-white/50 dark:bg-muted/50 border">
-                        <div className="flex items-start justify-between mb-3">
-                          <div>
-                            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 mb-2">
-                              {currentVisit.status?.replace('_', ' ').toUpperCase()}
-                            </Badge>
-                            <h4 className="font-semibold text-lg">{currentVisit.chief_complaint}</h4>
-                            <p className="text-sm text-muted-foreground mt-1">
-                              {currentVisit.department?.name || 'General Care'}
-                            </p>
-                          </div>
-                        </div>
-
-                        {currentVisit.attending_doctor && (
-                          <div className="flex items-center gap-3 mt-4 p-3 rounded-lg bg-secondary/10 border border-secondary/20">
-                            <div className="w-10 h-10 bg-secondary/20 rounded-full flex items-center justify-center">
-                              <User className="w-5 h-5 text-secondary" />
-                            </div>
-                            <div>
-                              <p className="text-xs text-muted-foreground">Attending Physician</p>
-                              <p className="font-semibold">
-                                Dr. {currentVisit.attending_doctor.first_name} {currentVisit.attending_doctor.last_name}
-                              </p>
-                              {currentVisit.attending_doctor.specialization && (
-                                <p className="text-xs text-muted-foreground">
-                                  {currentVisit.attending_doctor.specialization}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        )}
-
-                        <div className="mt-3 text-xs text-muted-foreground">
-                          <p>Visit Number: {currentVisit.visit_number}</p>
-                          <p>Checked in: {new Date(currentVisit.check_in_time).toLocaleString()}</p>
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+              <Card className="card-shadow hover-lift border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+                <CardHeader>
+                  <CardTitle className="text-xl flex items-center gap-2">
+                    <Hospital className="w-5 h-5 text-primary" />
+                    Current Visit
+                  </CardTitle>
+                  <CardDescription>You have an active hospital visit</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-xl bg-white/50 dark:bg-muted/50 border">
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 mb-2">
+                            {currentVisit.status?.replace('_', ' ').toUpperCase()}
+                          </Badge>
+                          <h4 className="font-semibold text-lg">{currentVisit.chief_complaint}</h4>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {currentVisit.department?.name || 'General Care'}
+                          </p>
                         </div>
                       </div>
+
+                      {currentVisit.attending_doctor && (
+                        <div className="flex items-center gap-3 mt-4 p-3 rounded-lg bg-secondary/10 border border-secondary/20">
+                          <div className="w-10 h-10 bg-secondary/20 rounded-full flex items-center justify-center">
+                            <User className="w-5 h-5 text-secondary" />
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground">Attending Physician</p>
+                            <p className="font-semibold">
+                              Dr. {currentVisit.attending_doctor.first_name} {currentVisit.attending_doctor.last_name}
+                            </p>
+                            {currentVisit.attending_doctor.specialization && (
+                              <p className="text-xs text-muted-foreground">
+                                {currentVisit.attending_doctor.specialization}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="mt-3 text-xs text-muted-foreground">
+                        <p>Visit Number: {currentVisit.visit_number}</p>
+                        <p>Checked in: {new Date(currentVisit.check_in_time).toLocaleString()}</p>
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
 
           {/* My Care Team - Always Visible */}
           <motion.div
@@ -715,6 +623,7 @@ const PatientDashboard = () => {
                           {doctor.specialization && (
                             <p className="text-sm text-muted-foreground">
                               {doctor.specialization}
+                              {doctor.department_id && ' • Dept'}
                             </p>
                           )}
                         </div>
@@ -722,18 +631,11 @@ const PatientDashboard = () => {
                           variant="outline"
                           size="sm"
                           className="btn-press"
-                          onClick={async () => {
-                            // Pre-select this doctor and their department
-                            const doctorDept = doctor.department_id || (await supabase
-                              .from('hospital_staff')
-                              .select('department_id')
-                              .eq('id', doctor.id)
-                              .single()).data?.department_id;
-
+                          onClick={() => {
                             setBookingForm({
                               ...bookingForm,
                               doctor_id: doctor.id,
-                              department_id: doctorDept || '',
+                              department_id: doctor.department_id || '', // now directly available
                               appointment_type: 'follow_up'
                             });
                             setShowBookAppointment(true);
@@ -804,7 +706,7 @@ const PatientDashboard = () => {
                           </div>
                           <div>
                             <h4 className="font-semibold">
-                              {apt.doctor ? `Dr. ${apt.doctor.first_name} ${apt.doctor.last_name}` : 'TBA'}
+                              {apt.doctor ? `Dr.${apt.doctor.first_name} ${apt.doctor.last_name}` : 'TBA'}
                               {apt.department && ` - ${apt.department.name}`}
                             </h4>
                             <p className="text-sm text-muted-foreground">{apt.appointment_type || 'Consultation'}</p>
@@ -855,7 +757,13 @@ const PatientDashboard = () => {
                         size="sm"
                         className="mt-2 btn-press"
                         variant="outline"
-                        onClick={() => handleRequestRefill(prescriptions.find(rx => rx.refills_allowed === 0)?.id || '')}
+                        onClick={() => {
+                          const dueRx = prescriptions.find(rx => rx.refills_allowed === 0);
+                          if (dueRx) {
+                            setSelectedPrescription(dueRx);
+                            setShowRefillRequest(true);
+                          }
+                        }}
                       >
                         Request Refill
                       </Button>
@@ -966,23 +874,37 @@ const PatientDashboard = () => {
                         <Clock className="w-3 h-3" />
                         Expires: {expiryDate}
                       </div>
-                      <div className="flex items-center gap-2 mt-2">
-                        <Badge variant="outline" className="text-xs bg-secondary/10">
-                          {rx.status}
-                        </Badge>
-                        {rx.refills_allowed === 0 && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="btn-press text-xs h-6"
-                            onClick={() => {
-                              setSelectedPrescription(rx);
-                              setShowRefillRequest(true);
-                            }}
-                          >
-                            Request Refill
-                          </Button>
-                        )}
+                      <div className="space-y-2 mt-2">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-xs bg-secondary/10">
+                            {rx.status}
+                          </Badge>
+                          {rx.refills_allowed === 0 && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="btn-press text-xs h-6"
+                              onClick={() => {
+                                setSelectedPrescription(rx);
+                                setShowRefillRequest(true);
+                              }}
+                            >
+                              Request Refill
+                            </Button>
+                          )}
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="w-full btn-press text-xs h-8"
+                          onClick={() => {
+                            setSelectedPrescription(rx);
+                            setShowPrescriptionDetails(true);
+                          }}
+                        >
+                          <FileText className="w-3 h-3 mr-1" />
+                          View Details
+                        </Button>
                       </div>
                     </div>
                   );
@@ -1021,7 +943,7 @@ const PatientDashboard = () => {
                         <div className="flex-1">
                           <h4 className="font-semibold">
                             {record.title}
-                            {record.department && ` - ${record.department.name}`}
+                            {record.department && ` - ${record.department.name} `}
                           </h4>
                           <p className="text-sm text-muted-foreground">{recordDate}</p>
                           {record.doctor && (
@@ -1267,9 +1189,7 @@ const PatientDashboard = () => {
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
-                    className={`w-full h-12 justify-start text-left font-normal border-2 hover:border-primary transition-colors ${
-                      !selectedDate && "text-muted-foreground"
-                    }`}
+                    className={`w-full h-12 justify-start text-left font-normal border-2 hover:border-primary transition-colors ${!selectedDate ? 'text-muted-foreground' : ''}`}
                   >
                     <Calendar className="mr-2 h-4 w-4" />
                     {selectedDate ? format(selectedDate, "PPP") : "Pick a date"}
@@ -1306,14 +1226,14 @@ const PatientDashboard = () => {
                   {Array.from({ length: 48 }, (_, i) => {
                     const hour = Math.floor(i / 2);
                     const minute = i % 2 === 0 ? '00' : '30';
-                    const time = `${hour.toString().padStart(2, '0')}:${minute}`;
+                    const time = `${hour.toString().padStart(2, '0')}:${minute} `;
                     const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
                     const period = hour < 12 ? 'AM' : 'PM';
                     return (
                       <SelectItem key={time} value={time} className="py-2">
                         <div className="flex items-center gap-2">
                           <Clock className="w-4 h-4 text-muted-foreground" />
-                          <span>{`${displayHour}:${minute} ${period}`}</span>
+                          <span>{`${displayHour}:${minute} ${period} `}</span>
                         </div>
                       </SelectItem>
                     );
@@ -1379,7 +1299,7 @@ const PatientDashboard = () => {
                 <h4 className="font-semibold mb-2">Doctor</h4>
                 <p className="text-muted-foreground">
                   {selectedAppointment.doctor
-                    ? `Dr. ${selectedAppointment.doctor.first_name} ${selectedAppointment.doctor.last_name}`
+                    ? `Dr.${selectedAppointment.doctor.first_name} ${selectedAppointment.doctor.last_name} `
                     : 'To be assigned'}
                 </p>
               </div>
@@ -1455,12 +1375,12 @@ const PatientDashboard = () => {
                   <h4 className="font-semibold text-accent">
                     {selectedLabOrder.results_available_at
                       ? new Date(selectedLabOrder.results_available_at).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                          hour: 'numeric',
-                          minute: '2-digit'
-                        })
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit'
+                      })
                       : 'Pending'}
                   </h4>
                 </div>
@@ -1519,10 +1439,10 @@ const PatientDashboard = () => {
                               <span className="font-medium">{formattedKey}</span>
                             </div>
                             <div className="flex items-center gap-2">
-                              <span className="font-bold text-lg">{value}</span>
+                              <span className="font-bold text-lg">{String(value)}</span>
                               {selectedLabOrder.results.reference_ranges?.[key] && (
                                 <span className="text-xs text-muted-foreground ml-2 px-2 py-1 rounded-md bg-muted/50">
-                                  Ref: {selectedLabOrder.results.reference_ranges[key]}
+                                  Ref: {String(selectedLabOrder.results.reference_ranges[key])}
                                 </span>
                               )}
                             </div>
@@ -1935,7 +1855,7 @@ const PatientDashboard = () => {
                   const printWindow = window.open('', '_blank');
                   if (printWindow) {
                     printWindow.document.write(`
-                      <html>
+      < html >
                         <head>
                           <title>Medical Record - ${selectedMedicalRecord?.title || 'Document'}</title>
                           <style>
@@ -1988,8 +1908,8 @@ const PatientDashboard = () => {
                             <p>This is an official medical record. Printed on ${new Date().toLocaleString()}</p>
                           </div>
                         </body>
-                      </html>
-                    `);
+                      </html >
+  `);
                     printWindow.document.close();
                     printWindow.print();
                   }
@@ -1999,6 +1919,425 @@ const PatientDashboard = () => {
             >
               <FileText className="w-4 h-4 mr-2" />
               Print Record
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* All Appointments Management Modal */}
+      <Dialog open={showAllAppointments} onOpenChange={setShowAllAppointments}>
+        <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+                  <Calendar className="w-6 h-6 text-primary" />
+                  Manage Appointments
+                </DialogTitle>
+                <DialogDescription>
+                  View, schedule, and manage all your appointments
+                </DialogDescription>
+              </div>
+              <Button
+                className="btn-press gradient-royal"
+                onClick={() => {
+                  setShowAllAppointments(false);
+                  setShowBookAppointment(true);
+                }}
+              >
+                <Calendar className="w-4 h-4 mr-2" />
+                Book New
+              </Button>
+            </div>
+          </DialogHeader>
+          <div className="py-4">
+            {appointments.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="w-20 h-20 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
+                  <Calendar className="w-10 h-10 text-primary opacity-50" />
+                </div>
+                <h4 className="font-semibold text-lg mb-2">No Upcoming Appointments</h4>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Schedule your first appointment to get started with your healthcare journey
+                </p>
+                <Button
+                  className="btn-press gradient-royal"
+                  onClick={() => {
+                    setShowAllAppointments(false);
+                    setShowBookAppointment(true);
+                  }}
+                >
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Book First Appointment
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {appointments.map((apt) => {
+                  const scheduledDate = new Date(apt.scheduled_time);
+                  const formattedDate = scheduledDate.toLocaleDateString('en-US', {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric'
+                  });
+                  const formattedTime = scheduledDate.toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                  });
+
+                  return (
+                    <motion.div
+                      key={apt.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="p-4 rounded-xl bg-muted/30 border hover-lift"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-start gap-4 flex-1">
+                          <div className="w-14 h-14 gradient-royal rounded-xl flex items-center justify-center flex-shrink-0">
+                            <Calendar className="w-7 h-7 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-start justify-between mb-2">
+                              <div>
+                                <h4 className="font-semibold text-lg">
+                                  {apt.doctor
+                                    ? `Dr. ${apt.doctor.first_name} ${apt.doctor.last_name}`
+                                    : 'Doctor TBA'}
+                                </h4>
+                                {apt.department && (
+                                  <p className="text-sm text-muted-foreground">{apt.department.name}</p>
+                                )}
+                              </div>
+                              <Badge variant="outline" className="bg-primary/10 text-primary">
+                                {apt.status}
+                              </Badge>
+                            </div>
+                            <div className="space-y-1 text-sm">
+                              <div className="flex items-center gap-2 text-muted-foreground">
+                                <Calendar className="w-4 h-4" />
+                                <span>{formattedDate}</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-muted-foreground">
+                                <Clock className="w-4 h-4" />
+                                <span>{formattedTime}</span>
+                              </div>
+                              {apt.appointment_type && (
+                                <div className="flex items-center gap-2">
+                                  <Badge variant="outline" className="text-xs">
+                                    {apt.appointment_type.replace('_', ' ')}
+                                  </Badge>
+                                </div>
+                              )}
+                              {apt.reason && (
+                                <p className="text-sm mt-2 text-muted-foreground italic">
+                                  "{apt.reason}"
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="btn-press"
+                            onClick={() => {
+                              setSelectedAppointment(apt);
+                              setShowAllAppointments(false);
+                              setShowAppointmentDetails(true);
+                            }}
+                          >
+                            <FileText className="w-4 h-4 mr-1" />
+                            Details
+                          </Button>
+                          {apt.status === 'scheduled' && (
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              className="btn-press"
+                              onClick={async () => {
+                                if (confirm('Are you sure you want to cancel this appointment?')) {
+                                  try {
+                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                    await (supabase as any)
+                                      .from('appointments')
+                                      .update({ status: 'cancelled' })
+                                      .eq('id', apt.id);
+
+                                    toast({
+                                      title: "Appointment Cancelled",
+                                      description: "Your appointment has been cancelled successfully"
+                                    });
+
+                                    if (user) await fetchPatientData(user.id);
+                                  } catch (error) {
+                                    toast({
+                                      title: "Error",
+                                      description: "Failed to cancel appointment",
+                                      variant: "destructive"
+                                    });
+                                  }
+                                }
+                              }}
+                            >
+                              Cancel
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* All Prescriptions Management Modal */}
+      <Dialog open={showAllPrescriptions} onOpenChange={setShowAllPrescriptions}>
+        <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+              <Pill className="w-6 h-6 text-secondary" />
+              Manage Prescriptions
+            </DialogTitle>
+            <DialogDescription>
+              View and manage all your active prescriptions
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            {prescriptions.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="w-20 h-20 mx-auto mb-4 bg-secondary/10 rounded-full flex items-center justify-center">
+                  <Pill className="w-10 h-10 text-secondary opacity-50" />
+                </div>
+                <h4 className="font-semibold text-lg mb-2">No Active Prescriptions</h4>
+                <p className="text-sm text-muted-foreground">
+                  Your prescriptions will appear here after your doctor visit
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {prescriptions.map((rx) => {
+                  const expiryDate = rx.valid_until
+                    ? new Date(rx.valid_until).toLocaleDateString('en-US', {
+                        month: 'long',
+                        day: 'numeric',
+                        year: 'numeric'
+                      })
+                    : 'N/A';
+                  const totalItems = rx.prescription_items?.length || 0;
+
+                  return (
+                    <motion.div
+                      key={rx.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="p-4 rounded-xl bg-secondary/5 border border-secondary/10 hover-lift"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-start gap-4 flex-1">
+                          <div className="w-14 h-14 bg-secondary/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <Pill className="w-7 h-7 text-secondary" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-start justify-between mb-2">
+                              <div>
+                                <h4 className="font-semibold text-lg">
+                                  {rx.prescription_items && rx.prescription_items[0]
+                                    ? `${rx.prescription_items[0].medication_name}`
+                                    : `Prescription #${rx.prescription_number}`}
+                                </h4>
+                                <p className="text-sm text-muted-foreground">
+                                  {totalItems > 1 ? `+ ${totalItems - 1} more medications` : rx.prescription_items?.[0]?.dosage || ''}
+                                </p>
+                              </div>
+                              <div className="flex gap-2">
+                                <Badge variant="outline" className="bg-secondary/10">
+                                  {rx.status}
+                                </Badge>
+                                <Badge variant={rx.refills_allowed > 0 ? "outline" : "destructive"}>
+                                  {rx.refills_allowed} refills
+                                </Badge>
+                              </div>
+                            </div>
+                            <div className="space-y-1 text-sm">
+                              <div className="flex items-center gap-2 text-muted-foreground">
+                                <Clock className="w-4 h-4" />
+                                <span>Expires: {expiryDate}</span>
+                              </div>
+                              <div className="flex items-center gap-2 text-muted-foreground">
+                                <FileText className="w-4 h-4" />
+                                <span>Rx #{rx.prescription_number}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="btn-press"
+                            onClick={() => {
+                              setSelectedPrescription(rx);
+                              setShowAllPrescriptions(false);
+                              setShowPrescriptionDetails(true);
+                            }}
+                          >
+                            <FileText className="w-4 h-4 mr-1" />
+                            View Details
+                          </Button>
+                          {rx.refills_allowed === 0 && (
+                            <Button
+                              size="sm"
+                              variant="default"
+                              className="btn-press bg-secondary hover:bg-secondary/90"
+                              onClick={() => {
+                                setSelectedPrescription(rx);
+                                setShowAllPrescriptions(false);
+                                setShowRefillRequest(true);
+                              }}
+                            >
+                              <Pill className="w-4 h-4 mr-1" />
+                              Request Refill
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Prescription Details Modal */}
+      <Dialog open={showPrescriptionDetails} onOpenChange={setShowPrescriptionDetails}>
+        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <div className="flex items-center justify-center mb-4">
+              <div className="relative">
+                <div className="absolute inset-0 bg-secondary/30 rounded-full blur-xl"></div>
+                <div className="relative w-16 h-16 bg-gradient-to-br from-secondary to-secondary/70 rounded-full flex items-center justify-center luxury-shadow">
+                  <Pill className="w-8 h-8 text-white" />
+                </div>
+              </div>
+            </div>
+            <DialogTitle className="text-center text-2xl font-bold">Prescription Details</DialogTitle>
+            <DialogDescription className="text-center">
+              Complete medication information and instructions
+            </DialogDescription>
+          </DialogHeader>
+          {selectedPrescription && (
+            <div className="space-y-6 py-4">
+              {/* Prescription Header Info */}
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="p-4 rounded-xl bg-primary/5 border border-primary/10">
+                  <p className="text-xs text-muted-foreground mb-1">Prescription Number</p>
+                  <h4 className="font-semibold text-primary">{selectedPrescription.prescription_number}</h4>
+                </div>
+                <div className="p-4 rounded-xl bg-secondary/5 border border-secondary/10">
+                  <p className="text-xs text-muted-foreground mb-1">Status</p>
+                  <Badge variant="outline" className="bg-secondary/10 text-secondary border-secondary/20">
+                    {selectedPrescription.status}
+                  </Badge>
+                </div>
+                <div className="p-4 rounded-xl bg-accent/5 border border-accent/10">
+                  <p className="text-xs text-muted-foreground mb-1">Refills Remaining</p>
+                  <h4 className="font-semibold text-accent">{selectedPrescription.refills_allowed}</h4>
+                </div>
+                <div className="p-4 rounded-xl bg-destructive/5 border border-destructive/10">
+                  <p className="text-xs text-muted-foreground mb-1">Valid Until</p>
+                  <h4 className="font-semibold text-destructive">
+                    {selectedPrescription.valid_until
+                      ? new Date(selectedPrescription.valid_until).toLocaleDateString('en-US', {
+                          month: 'long',
+                          day: 'numeric',
+                          year: 'numeric'
+                        })
+                      : 'N/A'}
+                  </h4>
+                </div>
+              </div>
+
+              {/* Medications List */}
+              {selectedPrescription.prescription_items && selectedPrescription.prescription_items.length > 0 && (
+                <div className="border-t pt-6">
+                  <h4 className="font-bold text-lg mb-4 flex items-center gap-2">
+                    <Pill className="w-5 h-5 text-secondary" />
+                    Medications ({selectedPrescription.prescription_items.length})
+                  </h4>
+                  <div className="space-y-4">
+                    {selectedPrescription.prescription_items.map((item, index) => (
+                      <div key={index} className="p-4 rounded-xl bg-secondary/5 border border-secondary/10">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-secondary/20 rounded-full flex items-center justify-center">
+                              <Pill className="w-5 h-5 text-secondary" />
+                            </div>
+                            <div>
+                              <h5 className="font-semibold text-lg">{item.medication_name}</h5>
+                              {item.dosage && (
+                                <p className="text-sm text-muted-foreground">{item.dosage}</p>
+                              )}
+                            </div>
+                          </div>
+                          <Badge variant="outline" className="bg-secondary/10">#{index + 1}</Badge>
+                        </div>
+                        {item.frequency && (
+                          <div className="mb-2">
+                            <p className="text-xs text-muted-foreground font-semibold mb-1">Frequency</p>
+                            <p className="text-sm">{item.frequency}</p>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              {selectedPrescription.refills_allowed === 0 && (
+                <div className="p-4 rounded-xl bg-accent/10 border border-accent/20">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="w-5 h-5 text-accent mt-0.5 flex-shrink-0" />
+                    <div className="flex-1">
+                      <h5 className="font-semibold text-accent mb-1">No Refills Remaining</h5>
+                      <p className="text-xs text-muted-foreground mb-2">
+                        You'll need to request a refill from your doctor to continue this medication.
+                      </p>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="btn-press"
+                        onClick={() => {
+                          setShowPrescriptionDetails(false);
+                          setShowRefillRequest(true);
+                        }}
+                      >
+                        Request Refill
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          <div className="flex gap-3 pt-4 border-t">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowPrescriptionDetails(false);
+                setSelectedPrescription(null);
+              }}
+              className="flex-1 btn-press hover-lift"
+            >
+              Close
             </Button>
           </div>
         </DialogContent>
@@ -2034,7 +2373,7 @@ const PatientDashboard = () => {
                     <div>
                       <span className="text-muted-foreground">Medications:</span>
                       <ul className="ml-2 mt-1">
-                        {selectedPrescription.prescription_items.map((item: any, idx: number) => (
+                        {selectedPrescription.prescription_items.map((item: PrescriptionItem, idx: number) => (
                           <li key={idx} className="font-medium">
                             • {item.medication_name} {item.dosage}
                           </li>
