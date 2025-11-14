@@ -1,3 +1,14 @@
+-- ============================================================================
+-- GENERATE DUMMY PRESCRIPTION DATA
+-- ============================================================================
+-- This script creates realistic prescription data for the HospitalGuard system
+-- Run this AFTER hospital-seed.sql and pharmacy-medication-categories.sql
+-- ============================================================================
+
+-- Optional: Clear existing prescription data (uncomment if you want to start fresh)
+-- DELETE FROM medication_dispensing;
+-- DELETE FROM prescription_items;
+-- DELETE FROM prescriptions;
 
 DO $$
 DECLARE
@@ -7,7 +18,24 @@ DECLARE
   prescription_id UUID;
   prescription_num TEXT;
   counter INTEGER := 1;
+  max_existing_counter INTEGER := 0;
 BEGIN
+  -- Find the highest existing prescription number to avoid duplicates
+  SELECT COALESCE(
+    MAX(
+      CAST(
+        SUBSTRING(prescription_number FROM 'RX-2025-(\d+)')
+        AS INTEGER
+      )
+    ), 0
+  ) INTO max_existing_counter
+  FROM prescriptions
+  WHERE prescription_number ~ '^RX-2025-\d+$';
+
+  -- Start counter after the highest existing number
+  counter := max_existing_counter + 1;
+
+  RAISE NOTICE 'Starting prescription counter at: %', counter;
   -- Loop through patients and create prescriptions
   FOR patient_record IN
     SELECT id FROM patients ORDER BY created_at LIMIT 16
@@ -74,7 +102,7 @@ BEGIN
           INSERT INTO prescription_items (prescription_id, medication_name, dosage, frequency, duration, quantity, instructions)
           SELECT
             prescription_id,
-            medication_name,
+            pi.medication_name,
             CASE
               WHEN random() < 0.3 THEN '10mg'
               WHEN random() < 0.6 THEN '25mg'
@@ -100,8 +128,8 @@ BEGIN
               WHEN random() < 0.6 THEN 'Take before meals'
               ELSE 'Take as directed'
             END
-          FROM pharmacy_inventory
-          WHERE quantity_available > 0
+          FROM pharmacy_inventory pi
+          WHERE pi.quantity_available > 0
           ORDER BY RANDOM()
           LIMIT 1;
         END LOOP;
