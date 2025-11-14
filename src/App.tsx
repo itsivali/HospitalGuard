@@ -11,7 +11,7 @@ import DoctorDashboard from "./pages/DoctorDashboard";
 import NurseDashboard from "./pages/NurseDashboard";
 import PharmacistDashboard from "./pages/PharmacistDashboard";
 import BillingDashboard from "./pages/BillingDashboard";
-import AdminDashboard from "./pages/AdminDashboard";
+import AdminDashboard from "./pages/AdminDashboardEnhanced";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
