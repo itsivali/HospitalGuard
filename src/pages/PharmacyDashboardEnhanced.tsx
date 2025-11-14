@@ -401,7 +401,7 @@ const PharmacyDashboardEnhanced = () => {
             </div>
             <div>
               <h1 className="font-bold text-2xl tracking-tight">Pharmacy Management</h1>
-              <p className="text-xs text-muted-foreground">Complete Drug Information & CRUD System</p>
+              <p className="text-xs text-muted-foreground">Pharmacy Inventory & Management</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
