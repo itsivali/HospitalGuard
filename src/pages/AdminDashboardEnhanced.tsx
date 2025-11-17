@@ -58,6 +58,7 @@ const AdminDashboardEnhanced = () => {
   const [showCreateDoctorModal, setShowCreateDoctorModal] = useState(false);
   const [showCreatePrescriptionModal, setShowCreatePrescriptionModal] = useState(false);
   const [showBillingModal, setShowBillingModal] = useState(false);
+  const [showPrescriptionModal, setShowPrescriptionModal] = useState(false);
 
   // Stats
   const [stats, setStats] = useState({
@@ -540,9 +541,15 @@ const AdminDashboardEnhanced = () => {
             </Card>
           </motion.div>
 
-          {/* Prescriptions Card */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <Card className="hover-lift bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0">
+          {/* Prescriptions Card - Clickable */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            onClick={() => setShowPrescriptionModal(true)}
+            className="cursor-pointer"
+          >
+            <Card className="hover-lift bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0 hover:shadow-2xl transition-all">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-sm font-medium text-purple-100">Prescriptions</CardTitle>
@@ -551,7 +558,7 @@ const AdminDashboardEnhanced = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold">{stats.totalPrescriptions}</div>
-                <p className="text-xs text-purple-100 mt-1">All prescriptions</p>
+                <p className="text-xs text-purple-100 mt-1">Click to manage →</p>
               </CardContent>
             </Card>
           </motion.div>
@@ -762,66 +769,759 @@ const AdminDashboardEnhanced = () => {
 
         {/* Billing Modal */}
         <Dialog open={showBillingModal} onOpenChange={setShowBillingModal}>
-          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-7xl max-h-[95vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-2xl flex items-center gap-2">
                 <Wallet className="w-6 h-6 text-amber-600" />
-                Billing Overview
+                Billing Portal - Financial Overview
               </DialogTitle>
               <DialogDescription>
-                Complete financial data - Bills, payments, and revenue
+                Complete financial management - Revenue, payments, and billing
               </DialogDescription>
             </DialogHeader>
 
-            {/* Billing Stats */}
-            <div className="grid grid-cols-3 gap-4 mb-6">
-              <div className="p-4 bg-emerald-50 rounded-lg">
-                <p className="text-sm text-muted-foreground mb-1">Total Revenue</p>
-                <p className="text-2xl font-bold text-emerald-600">{formatCurrency(stats.totalRevenue)}</p>
-              </div>
-              <div className="p-4 bg-amber-50 rounded-lg">
-                <p className="text-sm text-muted-foreground mb-1">Pending Payments</p>
-                <p className="text-2xl font-bold text-amber-600">{formatCurrency(stats.pendingPayments)}</p>
-              </div>
-              <div className="p-4 bg-red-50 rounded-lg">
-                <p className="text-sm text-muted-foreground mb-1">Overdue</p>
-                <p className="text-2xl font-bold text-red-600">{stats.overduePayments} bills</p>
-              </div>
+            {/* Financial Overview Stats */}
+            <div className="grid gap-4 md:grid-cols-4 mb-6">
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+                <Card className="hover-lift card-shadow bg-accent/5 border-accent/20">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="w-10 h-10 bg-accent/10 rounded-2xl flex items-center justify-center">
+                        <DollarSign className="w-5 h-5 text-accent" />
+                      </div>
+                      <Badge variant="outline" className="bg-accent/10 text-accent border-accent/20 text-xs">Today</Badge>
+                    </div>
+                    <h3 className="text-xl font-bold">{formatCurrency(stats.totalRevenue)}</h3>
+                    <p className="text-xs text-muted-foreground">Total Revenue</p>
+                    <div className="flex items-center gap-1 mt-2 text-xs text-secondary">
+                      <TrendingUp className="w-3 h-3" />
+                      <span>+12% from yesterday</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+                <Card className="hover-lift card-shadow bg-primary/5 border-primary/20">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="w-10 h-10 bg-primary/10 rounded-2xl flex items-center justify-center">
+                        <FileText className="w-5 h-5 text-primary" />
+                      </div>
+                      <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-xs">Pending</Badge>
+                    </div>
+                    <h3 className="text-xl font-bold">{stats.unpaidBills}</h3>
+                    <p className="text-xs text-muted-foreground">Unpaid Bills</p>
+                    <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
+                      <DollarSign className="w-3 h-3" />
+                      <span>{formatCurrency(stats.pendingPayments)} outstanding</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+                <Card className="hover-lift card-shadow bg-secondary/5 border-secondary/20">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="w-10 h-10 bg-secondary/10 rounded-2xl flex items-center justify-center">
+                        <CheckCircle2 className="w-5 h-5 text-secondary" />
+                      </div>
+                      <Badge variant="outline" className="bg-secondary/10 text-secondary border-secondary/20 text-xs">Paid</Badge>
+                    </div>
+                    <h3 className="text-xl font-bold">{bills.filter(b => b.status === 'paid').length}</h3>
+                    <p className="text-xs text-muted-foreground">Paid Bills</p>
+                    <div className="flex items-center gap-1 mt-2 text-xs text-secondary">
+                      <TrendingUp className="w-3 h-3" />
+                      <span>97% collection rate</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+                <Card className="hover-lift card-shadow bg-destructive/5 border-destructive/20">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="w-10 h-10 bg-destructive/10 rounded-2xl flex items-center justify-center">
+                        <AlertCircle className="w-5 h-5 text-destructive" />
+                      </div>
+                      <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20 text-xs">Overdue</Badge>
+                    </div>
+                    <h3 className="text-xl font-bold">{stats.overduePayments}</h3>
+                    <p className="text-xs text-muted-foreground">Payment Issues</p>
+                    <div className="flex items-center gap-1 mt-2 text-xs text-destructive">
+                      <AlertCircle className="w-3 h-3" />
+                      <span>Requires follow-up</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
             </div>
 
-            {/* Bills List */}
-            <div className="space-y-3">
-              {bills.slice(0, 50).map((bill) => (
-                <div key={bill.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="font-semibold">{bill.bill_number}</p>
-                      <Badge variant="outline">{bill.status}</Badge>
+            <div className="grid gap-6 lg:grid-cols-3 mb-6">
+              {/* Pending Payments */}
+              <Card className="lg:col-span-2 card-shadow hover-lift">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Receipt className="w-5 h-5 text-primary" />
+                        Pending Payments
+                      </CardTitle>
+                      <CardDescription className="text-xs">Outstanding bills requiring attention</CardDescription>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      Total: {formatCurrency(bill.total_amount)} •
-                      Paid: {formatCurrency(bill.amount_paid)} •
-                      Due: {formatCurrency(bill.amount_due)}
-                    </p>
-                    {bill.insurance_covered > 0 && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Insurance: {formatCurrency(bill.insurance_covered)}
-                      </p>
-                    )}
+                    <Button size="sm" className="btn-press gradient-gold text-xs">Process Payment</Button>
                   </div>
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="outline">
-                      <FileText className="w-4 h-4 mr-1" />
-                      View
-                    </Button>
-                    <Button size="sm" variant="outline">
-                      <CreditCard className="w-4 h-4 mr-1" />
-                      Pay
-                    </Button>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3 max-h-[300px] overflow-y-auto">
+                    {bills.filter(b => b.status !== 'paid').slice(0, 5).map((bill, i) => (
+                      <div key={i} className="p-3 rounded-xl bg-muted/30 hover-lift">
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="font-semibold text-sm">{bill.bill_number}</h4>
+                              <Badge
+                                variant="outline"
+                                className={`text-xs ${
+                                  bill.status === "overdue" ? "bg-destructive/10 text-destructive border-destructive/20" :
+                                  "bg-primary/10 text-primary border-primary/20"
+                                }`}
+                              >
+                                {bill.status}
+                              </Badge>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-lg font-bold text-accent">{formatCurrency(bill.amount_due)}</p>
+                          </div>
+                        </div>
+                        <div className="p-2 bg-accent/5 rounded-lg border border-accent/10">
+                          <div className="grid grid-cols-3 gap-2 text-xs">
+                            <div>
+                              <p className="text-[10px] text-muted-foreground">Total</p>
+                              <p className="font-medium">{formatCurrency(bill.total_amount)}</p>
+                            </div>
+                            <div>
+                              <p className="text-[10px] text-muted-foreground">Paid</p>
+                              <p className="font-medium">{formatCurrency(bill.amount_paid)}</p>
+                            </div>
+                            <div>
+                              <p className="text-[10px] text-muted-foreground">Due</p>
+                              <p className="font-medium text-destructive">{formatCurrency(bill.amount_due)}</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-2 mt-2">
+                          <Button size="sm" className="flex-1 btn-press gradient-gold text-xs h-7">
+                            <CreditCard className="w-3 h-3 mr-1" />
+                            Process
+                          </Button>
+                          <Button size="sm" variant="outline" className="btn-press text-xs h-7">
+                            <FileText className="w-3 h-3 mr-1" />
+                            View
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                </div>
-              ))}
+                </CardContent>
+              </Card>
+
+              {/* Action Items */}
+              <Card className="card-shadow hover-lift">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <Hospital className="w-4 h-4 text-accent" />
+                    Action Items
+                  </CardTitle>
+                  <CardDescription className="text-xs">Tasks requiring attention</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="p-2 rounded-lg bg-destructive/10 border border-destructive/20">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="w-4 h-4 text-destructive mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-xs font-semibold">Overdue Payments</p>
+                        <p className="text-[10px] text-muted-foreground mt-1">{stats.overduePayments} bills past due</p>
+                        <Button size="sm" className="mt-1.5 btn-press h-6 text-[10px]" variant="outline">Send Reminders</Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-2 rounded-lg bg-accent/10 border border-accent/20">
+                    <div className="flex items-start gap-2">
+                      <Building2 className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-xs font-semibold">Insurance Claims</p>
+                        <p className="text-[10px] text-muted-foreground mt-1">Pending approval from insurers</p>
+                        <Button size="sm" className="mt-1.5 btn-press h-6 text-[10px]" variant="outline">Follow Up</Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-2 rounded-lg bg-secondary/10 border border-secondary/20">
+                    <div className="flex items-start gap-2">
+                      <FileText className="w-4 h-4 text-secondary mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-xs font-semibold">Invoices Ready</p>
+                        <p className="text-[10px] text-muted-foreground mt-1">New invoices ready to send</p>
+                        <Button size="sm" className="mt-1.5 btn-press h-6 text-[10px]" variant="outline">Send Invoices</Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
+                    <div className="flex items-start gap-2">
+                      <TrendingUp className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-xs font-semibold">Payment Plans</p>
+                        <p className="text-[10px] text-muted-foreground mt-1">Patients need setup</p>
+                        <Button size="sm" className="mt-1.5 btn-press h-6 text-[10px]" variant="outline">Setup Plans</Button>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
+
+            {/* Payment Methods & Department Revenue */}
+            <div className="grid gap-6 lg:grid-cols-2 mb-6">
+              {/* Payment Methods */}
+              <Card className="card-shadow hover-lift">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Wallet className="w-5 h-5 text-accent" />
+                    Payment Methods
+                  </CardTitle>
+                  <CardDescription className="text-xs">Breakdown by payment type</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {[
+                      { method: "Credit Card", count: 48, amount: stats.totalRevenue * 0.57, percentage: "57%", icon: CreditCard },
+                      { method: "Insurance", count: 32, amount: stats.totalRevenue * 0.34, percentage: "34%", icon: Building2 },
+                      { method: "Cash", count: 18, amount: stats.totalRevenue * 0.07, percentage: "7%", icon: DollarSign },
+                      { method: "Payment Plan", count: 14, amount: stats.totalRevenue * 0.02, percentage: "2%", icon: Calendar }
+                    ].map((payment, i) => (
+                      <div key={i} className="p-3 rounded-xl bg-muted/30 hover-lift">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-accent/10 rounded-xl flex items-center justify-center">
+                              <payment.icon className="w-5 h-5 text-accent" />
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-sm">{payment.method}</h4>
+                              <p className="text-xs text-muted-foreground">{payment.count} transactions</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-bold">{formatCurrency(payment.amount)}</p>
+                            <p className="text-xs text-muted-foreground">{payment.percentage}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Department Revenue */}
+              <Card className="card-shadow hover-lift">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Activity className="w-5 h-5 text-primary" />
+                    Revenue by Department
+                  </CardTitle>
+                  <CardDescription className="text-xs">Top earning departments</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {[
+                      { dept: "Surgery", amount: stats.totalRevenue * 0.34, patients: 8, percentage: "34%" },
+                      { dept: "ICU", amount: stats.totalRevenue * 0.25, patients: 12, percentage: "25%" },
+                      { dept: "Emergency", amount: stats.totalRevenue * 0.17, patients: 24, percentage: "17%" },
+                      { dept: "Outpatient", amount: stats.totalRevenue * 0.13, patients: 42, percentage: "13%" },
+                      { dept: "Laboratory", amount: stats.totalRevenue * 0.07, patients: 89, percentage: "7%" }
+                    ].map((dept, i) => (
+                      <div key={i} className="p-3 rounded-xl bg-muted/30 hover-lift">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-semibold text-sm">{dept.dept}</h4>
+                          <p className="text-sm font-bold text-accent">{formatCurrency(dept.amount)}</p>
+                        </div>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
+                          <span>{dept.patients} patients</span>
+                          <span>{dept.percentage} of total</span>
+                        </div>
+                        <div className="w-full bg-muted/50 h-1.5 rounded-full overflow-hidden">
+                          <div
+                            className="h-full gradient-gold"
+                            style={{ width: dept.percentage }}
+                          ></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Recent Transactions */}
+            <Card className="card-shadow hover-lift">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Activity className="w-5 h-5 text-primary" />
+                  Recent Transactions
+                </CardTitle>
+                <CardDescription className="text-xs">Latest payment activities</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 max-h-[250px] overflow-y-auto">
+                  {bills.slice(0, 8).map((bill, i) => (
+                    <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-muted/30 hover-lift">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                          bill.status === "paid" ? "bg-secondary/10" :
+                          bill.status === "pending" ? "bg-primary/10" :
+                          "bg-destructive/10"
+                        }`}>
+                          {bill.status === "paid" ? (
+                            <CheckCircle2 className="w-5 h-5 text-secondary" />
+                          ) : bill.status === "pending" ? (
+                            <Clock className="w-5 h-5 text-primary" />
+                          ) : (
+                            <AlertCircle className="w-5 h-5 text-destructive" />
+                          )}
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-xs">{bill.bill_number}</h4>
+                          <p className="text-xs text-muted-foreground">{bill.status}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-bold">{formatCurrency(bill.total_amount)}</p>
+                        <p className="text-[10px] text-muted-foreground">Due: {formatCurrency(bill.amount_due)}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </DialogContent>
+        </Dialog>
+
+        {/* Prescription Management Modal */}
+        <Dialog open={showPrescriptionModal} onOpenChange={setShowPrescriptionModal}>
+          <DialogContent className="max-w-7xl max-h-[95vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-2xl flex items-center gap-2">
+                <Pill className="w-6 h-6 text-purple-600" />
+                Prescription Management Portal
+              </DialogTitle>
+              <DialogDescription>
+                Complete prescription oversight - Digital signatures, QR codes, and dispensing tracking
+              </DialogDescription>
+            </DialogHeader>
+
+            {/* Prescription Stats */}
+            <div className="grid gap-4 md:grid-cols-4 mb-6">
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+                <Card className="hover-lift card-shadow bg-purple-500/10 border-purple-500/20">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="w-10 h-10 bg-purple-500/20 rounded-2xl flex items-center justify-center">
+                        <Pill className="w-5 h-5 text-purple-600" />
+                      </div>
+                      <Badge variant="outline" className="bg-purple-500/10 text-purple-600 border-purple-500/20 text-xs">Total</Badge>
+                    </div>
+                    <h3 className="text-xl font-bold">{stats.totalPrescriptions}</h3>
+                    <p className="text-xs text-muted-foreground">All Prescriptions</p>
+                    <div className="flex items-center gap-1 mt-2 text-xs text-secondary">
+                      <TrendingUp className="w-3 h-3" />
+                      <span>+8% this month</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+                <Card className="hover-lift card-shadow bg-secondary/5 border-secondary/20">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="w-10 h-10 bg-secondary/10 rounded-2xl flex items-center justify-center">
+                        <CheckCircle2 className="w-5 h-5 text-secondary" />
+                      </div>
+                      <Badge variant="outline" className="bg-secondary/10 text-secondary border-secondary/20 text-xs">Active</Badge>
+                    </div>
+                    <h3 className="text-xl font-bold">{prescriptions.filter(p => p.status === 'signed' || p.status === 'dispensed').length}</h3>
+                    <p className="text-xs text-muted-foreground">Active Prescriptions</p>
+                    <div className="flex items-center gap-1 mt-2 text-xs text-secondary">
+                      <CheckCircle2 className="w-3 h-3" />
+                      <span>Ready for dispensing</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+                <Card className="hover-lift card-shadow bg-amber-500/5 border-amber-500/20">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="w-10 h-10 bg-amber-500/10 rounded-2xl flex items-center justify-center">
+                        <Clock className="w-5 h-5 text-amber-600" />
+                      </div>
+                      <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-xs">Pending</Badge>
+                    </div>
+                    <h3 className="text-xl font-bold">{prescriptions.filter(p => p.status === 'draft').length}</h3>
+                    <p className="text-xs text-muted-foreground">Awaiting Signature</p>
+                    <div className="flex items-center gap-1 mt-2 text-xs text-amber-600">
+                      <AlertCircle className="w-3 h-3" />
+                      <span>Needs doctor approval</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+                <Card className="hover-lift card-shadow bg-blue-500/5 border-blue-500/20">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="w-10 h-10 bg-blue-500/10 rounded-2xl flex items-center justify-center">
+                        <Activity className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <Badge variant="outline" className="bg-blue-500/10 text-blue-600 border-blue-500/20 text-xs">Refills</Badge>
+                    </div>
+                    <h3 className="text-xl font-bold">
+                      {prescriptions.reduce((sum, p) => sum + (p.refills_allowed || 0), 0)}
+                    </h3>
+                    <p className="text-xs text-muted-foreground">Available Refills</p>
+                    <div className="flex items-center gap-1 mt-2 text-xs text-blue-600">
+                      <Activity className="w-3 h-3" />
+                      <span>Across all prescriptions</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </div>
+
+            <div className="grid gap-6 lg:grid-cols-3 mb-6">
+              {/* Active Prescriptions */}
+              <Card className="lg:col-span-2 card-shadow hover-lift">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Pill className="w-5 h-5 text-purple-600" />
+                        Active Prescriptions
+                      </CardTitle>
+                      <CardDescription className="text-xs">Signed and ready for dispensing</CardDescription>
+                    </div>
+                    <Button size="sm" className="btn-press bg-gradient-to-r from-purple-500 to-purple-600 text-xs">
+                      <Plus className="w-3 h-3 mr-1" />
+                      New Prescription
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3 max-h-[300px] overflow-y-auto">
+                    {prescriptions.filter(p => p.status === 'signed' || p.status === 'dispensed').slice(0, 5).map((prescription, i) => (
+                      <div key={i} className="p-3 rounded-xl bg-muted/30 hover-lift">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="font-semibold text-sm">{prescription.prescription_number}</h4>
+                              <Badge
+                                variant="outline"
+                                className={`text-xs ${
+                                  prescription.status === "signed" ? "bg-secondary/10 text-secondary border-secondary/20" :
+                                  prescription.status === "dispensed" ? "bg-blue-500/10 text-blue-600 border-blue-500/20" :
+                                  "bg-amber-500/10 text-amber-600 border-amber-500/20"
+                                }`}
+                              >
+                                {prescription.status}
+                              </Badge>
+                              {prescription.refills_allowed > 0 && (
+                                <Badge variant="secondary" className="text-xs">
+                                  {prescription.refills_allowed} refills
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              Patient: {prescription.patient?.first_name} {prescription.patient?.last_name}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Doctor: Dr. {prescription.doctor?.first_name} {prescription.doctor?.last_name}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="p-2 bg-purple-500/5 rounded-lg border border-purple-500/10">
+                          <div className="grid grid-cols-3 gap-2 text-xs">
+                            <div>
+                              <p className="text-[10px] text-muted-foreground">Created</p>
+                              <p className="font-medium">{new Date(prescription.created_at).toLocaleDateString()}</p>
+                            </div>
+                            <div>
+                              <p className="text-[10px] text-muted-foreground">Valid Until</p>
+                              <p className="font-medium">{prescription.valid_until ? new Date(prescription.valid_until).toLocaleDateString() : 'N/A'}</p>
+                            </div>
+                            <div>
+                              <p className="text-[10px] text-muted-foreground">QR Code</p>
+                              <p className="font-medium flex items-center gap-1">
+                                {prescription.qr_code_data ? (
+                                  <>
+                                    <CheckCircle2 className="w-3 h-3 text-secondary" />
+                                    <span>Generated</span>
+                                  </>
+                                ) : (
+                                  <span>Not available</span>
+                                )}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-2 mt-2">
+                          <Button size="sm" className="flex-1 btn-press gradient-purple text-xs h-7">
+                            <FileText className="w-3 h-3 mr-1" />
+                            View Details
+                          </Button>
+                          <Button size="sm" variant="outline" className="btn-press text-xs h-7">
+                            <Download className="w-3 h-3 mr-1" />
+                            Print
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Prescription Insights */}
+              <Card className="card-shadow hover-lift">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <Activity className="w-4 h-4 text-purple-600" />
+                    Insights & Alerts
+                  </CardTitle>
+                  <CardDescription className="text-xs">Important notifications</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                    <div className="flex items-start gap-2">
+                      <Clock className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-xs font-semibold">Expiring Soon</p>
+                        <p className="text-[10px] text-muted-foreground mt-1">
+                          {prescriptions.filter(p => {
+                            if (!p.valid_until) return false;
+                            const daysUntilExpiry = Math.ceil((new Date(p.valid_until).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+                            return daysUntilExpiry <= 7 && daysUntilExpiry > 0;
+                          }).length} prescriptions expire within 7 days
+                        </p>
+                        <Button size="sm" className="mt-1.5 btn-press h-6 text-[10px]" variant="outline">Review</Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-2 rounded-lg bg-destructive/10 border border-destructive/20">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="w-4 h-4 text-destructive mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-xs font-semibold">Pending Signatures</p>
+                        <p className="text-[10px] text-muted-foreground mt-1">
+                          {prescriptions.filter(p => p.status === 'draft').length} prescriptions awaiting doctor signature
+                        </p>
+                        <Button size="sm" className="mt-1.5 btn-press h-6 text-[10px]" variant="outline">Notify Doctors</Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                    <div className="flex items-start gap-2">
+                      <Activity className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-xs font-semibold">Refill Requests</p>
+                        <p className="text-[10px] text-muted-foreground mt-1">Monitor and approve refill requests</p>
+                        <Button size="sm" className="mt-1.5 btn-press h-6 text-[10px]" variant="outline">Manage Refills</Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-2 rounded-lg bg-secondary/10 border border-secondary/20">
+                    <div className="flex items-start gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-secondary mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-xs font-semibold">Digital Signatures</p>
+                        <p className="text-[10px] text-muted-foreground mt-1">
+                          {prescriptions.filter(p => p.digital_signature).length} prescriptions digitally signed
+                        </p>
+                        <Button size="sm" className="mt-1.5 btn-press h-6 text-[10px]" variant="outline">Verify</Button>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Prescription by Status & Top Medications */}
+            <div className="grid gap-6 lg:grid-cols-2 mb-6">
+              {/* Prescriptions by Status */}
+              <Card className="card-shadow hover-lift">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Activity className="w-5 h-5 text-purple-600" />
+                    Prescriptions by Status
+                  </CardTitle>
+                  <CardDescription className="text-xs">Distribution across workflow stages</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {[
+                      { status: "Signed", count: prescriptions.filter(p => p.status === 'signed').length, percentage: `${Math.round((prescriptions.filter(p => p.status === 'signed').length / (prescriptions.length || 1)) * 100)}%`, color: "secondary" },
+                      { status: "Dispensed", count: prescriptions.filter(p => p.status === 'dispensed').length, percentage: `${Math.round((prescriptions.filter(p => p.status === 'dispensed').length / (prescriptions.length || 1)) * 100)}%`, color: "blue" },
+                      { status: "Draft", count: prescriptions.filter(p => p.status === 'draft').length, percentage: `${Math.round((prescriptions.filter(p => p.status === 'draft').length / (prescriptions.length || 1)) * 100)}%`, color: "amber" },
+                      { status: "Completed", count: prescriptions.filter(p => p.status === 'completed').length, percentage: `${Math.round((prescriptions.filter(p => p.status === 'completed').length / (prescriptions.length || 1)) * 100)}%`, color: "primary" }
+                    ].map((item, i) => (
+                      <div key={i} className="p-3 rounded-xl bg-muted/30 hover-lift">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 bg-${item.color === 'secondary' ? 'secondary' : item.color === 'blue' ? 'blue-500' : item.color === 'amber' ? 'amber-500' : 'primary'}/10 rounded-xl flex items-center justify-center`}>
+                              {item.status === "Signed" && <CheckCircle2 className="w-5 h-5 text-secondary" />}
+                              {item.status === "Dispensed" && <Pill className="w-5 h-5 text-blue-600" />}
+                              {item.status === "Draft" && <Clock className="w-5 h-5 text-amber-600" />}
+                              {item.status === "Completed" && <CheckCircle2 className="w-5 h-5 text-primary" />}
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-sm">{item.status}</h4>
+                              <p className="text-xs text-muted-foreground">{item.count} prescriptions</p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm font-bold">{item.percentage}</p>
+                          </div>
+                        </div>
+                        <div className="w-full bg-muted/50 h-1.5 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full ${item.color === 'secondary' ? 'bg-secondary' : item.color === 'blue' ? 'bg-blue-500' : item.color === 'amber' ? 'bg-amber-500' : 'bg-primary'}`}
+                            style={{ width: item.percentage }}
+                          ></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Top Prescribing Doctors */}
+              <Card className="card-shadow hover-lift">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Stethoscope className="w-5 h-5 text-primary" />
+                    Top Prescribing Doctors
+                  </CardTitle>
+                  <CardDescription className="text-xs">Most active prescribers this month</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {(() => {
+                      // Group prescriptions by doctor
+                      const doctorCounts = prescriptions.reduce((acc, p) => {
+                        const doctorKey = p.doctor_id;
+                        if (!acc[doctorKey]) {
+                          acc[doctorKey] = {
+                            name: `Dr. ${p.doctor?.first_name || ''} ${p.doctor?.last_name || ''}`,
+                            count: 0
+                          };
+                        }
+                        acc[doctorKey].count++;
+                        return acc;
+                      }, {} as Record<string, { name: string; count: number }>);
+
+                      // Convert to array and sort
+                      return Object.values(doctorCounts)
+                        .sort((a, b) => b.count - a.count)
+                        .slice(0, 5)
+                        .map((doctor, i) => {
+                          const percentage = `${Math.round((doctor.count / (prescriptions.length || 1)) * 100)}%`;
+                          return (
+                            <div key={i} className="p-3 rounded-xl bg-muted/30 hover-lift">
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                                    <span className="text-xs font-semibold text-primary">
+                                      {doctor.name.split(' ')[1]?.[0]}{doctor.name.split(' ')[2]?.[0]}
+                                    </span>
+                                  </div>
+                                  <div>
+                                    <h4 className="font-semibold text-sm">{doctor.name}</h4>
+                                    <p className="text-xs text-muted-foreground">{doctor.count} prescriptions</p>
+                                  </div>
+                                </div>
+                                <p className="text-sm font-bold text-primary">{percentage}</p>
+                              </div>
+                              <div className="w-full bg-muted/50 h-1.5 rounded-full overflow-hidden">
+                                <div
+                                  className="h-full gradient-royal"
+                                  style={{ width: percentage }}
+                                ></div>
+                              </div>
+                            </div>
+                          );
+                        });
+                    })()}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Recent Prescription Activity */}
+            <Card className="card-shadow hover-lift">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-purple-600" />
+                  Recent Prescription Activity
+                </CardTitle>
+                <CardDescription className="text-xs">Latest prescription actions and updates</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 max-h-[250px] overflow-y-auto">
+                  {prescriptions.slice(0, 8).map((prescription, i) => (
+                    <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-muted/30 hover-lift">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                          prescription.status === "signed" ? "bg-secondary/10" :
+                          prescription.status === "dispensed" ? "bg-blue-500/10" :
+                          prescription.status === "completed" ? "bg-primary/10" :
+                          "bg-amber-500/10"
+                        }`}>
+                          {prescription.status === "signed" ? (
+                            <CheckCircle2 className="w-5 h-5 text-secondary" />
+                          ) : prescription.status === "dispensed" ? (
+                            <Pill className="w-5 h-5 text-blue-600" />
+                          ) : prescription.status === "completed" ? (
+                            <CheckCircle2 className="w-5 h-5 text-primary" />
+                          ) : (
+                            <Clock className="w-5 h-5 text-amber-600" />
+                          )}
+                        </div>
+                        <div>
+                          <h4 className="font-semibold text-xs">{prescription.prescription_number}</h4>
+                          <p className="text-xs text-muted-foreground">
+                            {prescription.patient?.first_name} {prescription.patient?.last_name}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <Badge variant="outline" className="text-xs mb-1">{prescription.status}</Badge>
+                        <p className="text-[10px] text-muted-foreground">
+                          {new Date(prescription.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </DialogContent>
         </Dialog>
 

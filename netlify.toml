@@ -1,0 +1,85 @@
+# Netlify Configuration for HospitalGuard
+# https://docs.netlify.com/configure-builds/file-based-configuration/
+
+[build]
+  # Build command
+  command = "npm run build"
+
+  # Directory with the build output
+  publish = "dist"
+
+  # Base directory for the build
+  base = "."
+
+[build.environment]
+  # Node version
+  NODE_VERSION = "18"
+
+  # NPM version
+  NPM_VERSION = "9"
+
+# Redirect rules for SPA (Single Page Application)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Headers for security and performance
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Security headers
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+    # Cache control for HTML (no cache)
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    # Cache static assets for 1 year
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Content-Type = "application/javascript; charset=utf-8"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Content-Type = "text/css; charset=utf-8"
+
+# Branch-specific build settings
+[context.production]
+  command = "npm run build"
+
+[context.deploy-preview]
+  command = "npm run build:dev"
+
+[context.branch-deploy]
+  command = "npm run build:dev"
+
+# Development branch (if you have a dev branch)
+[context.dev]
+  command = "npm run build:dev"
+
+# Plugin configuration
+[[plugins]]
+  package = "@netlify/plugin-lighthouse"
+
+  [plugins.inputs]
+    # Run Lighthouse audit on every deploy
+    output_path = "reports/lighthouse.html"
+
+# Form handling (if needed)
+# [[plugins]]
+#   package = "netlify-plugin-forms"
+
+# Environment variable groups (set these in Netlify UI)
+# Required environment variables:
+# - VITE_SUPABASE_URL
+# - VITE_SUPABASE_PUBLISHABLE_KEY

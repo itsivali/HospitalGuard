@@ -192,20 +192,50 @@ Available animation classes:
 
 ## Deployment
 
-### Deploy with Lovable
+### Quick Deploy to Netlify ⚡
 
-1. Open your [Lovable project](https://lovable.dev/projects/55ae0daa-3fb0-4d9d-8d82-84f60f6b247e)
-2. Click Share → Publish
-3. Your app will be deployed automatically
+Deploy HospitalGuard to Netlify in 5 minutes:
+
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start)
+
+**Quick Start:**
+1. Click the deploy button above
+2. Connect your GitHub repository
+3. Add environment variables (Supabase URL & Key)
+4. Deploy!
+
+📖 **Detailed Guides:**
+- **[Quick Deploy Guide](./QUICK_DEPLOY.md)** - 5-minute deployment
+- **[Full Deployment Guide](./DEPLOYMENT.md)** - Complete setup with CI/CD
+- **[Deployment Checklist](./DEPLOYMENT_CHECKLIST.md)** - Step-by-step checklist
+
+### CI/CD Pipeline
+
+Automatic deployments configured via GitHub Actions:
+- ✅ Push to `main` → Production deployment
+- ✅ Push to `dev` → Preview deployment
+- ✅ Pull Requests → Preview with comments
+- ✅ Manual triggers available
+
+### Environment Variables
+
+Required for deployment:
+```env
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=your-anon-key
+```
+
+Set these in:
+- **Netlify**: Site Settings → Environment Variables
+- **GitHub**: Repository → Settings → Secrets
 
 ### Custom Domain
 
-To connect a custom domain:
-1. Navigate to Project > Settings > Domains
-2. Click "Connect Domain"
-3. Follow the setup instructions
-
-[Learn more about custom domains](https://docs.lovable.dev/features/custom-domain#custom-domain)
+To connect a custom domain to Netlify:
+1. Go to Site Settings → Domain management
+2. Click "Add custom domain"
+3. Follow DNS configuration instructions
+4. HTTPS enabled automatically ✅
 
 ## Roadmap
 
