@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
+import { DoctorList } from "@/components/DoctorList";
 import {
   Activity,
   Calendar,
@@ -209,39 +210,36 @@ const DoctorDashboard = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-primary/5 to-background">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <motion.div
-          className="w-20 h-20 gradient-royal rounded-3xl flex items-center justify-center luxury-shadow"
-          animate={{ rotate: [0, 360], scale: [1, 1.1, 1] }}
-          transition={{ duration: 2, repeat: Infinity }}
+          className="w-16 h-16 bg-primary rounded-lg flex items-center justify-center shadow-card"
+          animate={{ rotate: [0, 360] }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
         >
-          <Stethoscope className="w-10 h-10 text-white" />
+          <Stethoscope className="w-8 h-8 text-primary-foreground" />
         </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="glass-luxury sticky top-0 z-50 border-b">
+      <header className="bg-card border-b sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="relative">
-              <div className="absolute inset-0 bg-primary/20 rounded-3xl blur-2xl animate-pulse"></div>
-              <div className="relative w-14 h-14 gradient-royal rounded-3xl flex items-center justify-center luxury-shadow">
-                <Stethoscope className="w-8 h-8 text-white" />
-              </div>
+            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center shadow-sm">
+              <Stethoscope className="w-6 h-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="font-bold text-2xl tracking-tight">Doctor Portal</h1>
+              <h1 className="font-semibold text-xl text-foreground">Doctor Portal</h1>
               <p className="text-xs text-muted-foreground">
                 Dr. {doctorData ? `${doctorData.first_name} ${doctorData.last_name}` : user?.user_metadata?.full_name || 'Doctor'}
                 {doctorData?.department && ` • ${doctorData.department.name}`}
               </p>
             </div>
           </div>
-          <Button onClick={handleLogout} variant="outline" size="sm" className="btn-press hover-lift">
+          <Button onClick={handleLogout} variant="outline" size="sm" className="btn-press">
             <LogOut className="w-4 h-4 mr-2" />
             Logout
           </Button>
@@ -249,94 +247,95 @@ const DoctorDashboard = () => {
       </header>
 
       <main className="container mx-auto px-6 py-8">
-        {/* Quick Stats - Clickable */}
-        <div className="grid gap-6 md:grid-cols-4 mb-8">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        {/* Quick Stats - Business Central Style */}
+        <div className="grid gap-4 md:grid-cols-4 mb-6">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
             <Card
-              className="hover-lift card-shadow bg-primary/5 border-primary/20 cursor-pointer transition-all hover:border-primary/40 hover:shadow-lg"
+              className="bc-stat-card bg-primary/5 border-primary/20 hover:border-primary/40"
               onClick={() => setShowAllAppointments(true)}
             >
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center">
-                    <Calendar className="w-6 h-6 text-primary" />
-                  </div>
-                  <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">Today</Badge>
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                  <Calendar className="w-5 h-5 text-primary" />
                 </div>
-                <h3 className="text-2xl font-bold">{stats.todayAppointments}</h3>
-                <p className="text-sm text-muted-foreground">Appointments</p>
-                <p className="text-xs text-primary mt-2 font-medium">Click to manage →</p>
-              </CardContent>
+                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-xs">Today</Badge>
+              </div>
+              <p className="bc-metric">{stats.todayAppointments}</p>
+              <p className="bc-metric-label mt-1">Appointments</p>
+              <p className="text-xs text-primary mt-2 font-medium flex items-center gap-1">
+                Click to manage <ArrowRight className="w-3 h-3" />
+              </p>
             </Card>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
             <Card
-              className="hover-lift card-shadow bg-secondary/5 border-secondary/20 cursor-pointer transition-all hover:border-secondary/40 hover:shadow-lg"
+              className="bc-stat-card bg-secondary/5 border-secondary/20 hover:border-secondary/40"
               onClick={() => setShowMyPatients(true)}
             >
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-secondary/10 rounded-2xl flex items-center justify-center">
-                    <Users className="w-6 h-6 text-secondary" />
-                  </div>
-                  <Badge variant="outline" className="bg-secondary/10 text-secondary border-secondary/20">Active</Badge>
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 bg-secondary/10 rounded-lg flex items-center justify-center">
+                  <Users className="w-5 h-5 text-secondary" />
                 </div>
-                <h3 className="text-2xl font-bold">{stats.activePatientsCount}</h3>
-                <p className="text-sm text-muted-foreground">Under My Care</p>
-                <p className="text-xs text-secondary mt-2 font-medium">Click to view →</p>
-              </CardContent>
+                <Badge variant="outline" className="bg-secondary/10 text-secondary border-secondary/30 text-xs">Active</Badge>
+              </div>
+              <p className="bc-metric">{stats.activePatientsCount}</p>
+              <p className="bc-metric-label mt-1">Under My Care</p>
+              <p className="text-xs text-secondary mt-2 font-medium flex items-center gap-1">
+                Click to view <ArrowRight className="w-3 h-3" />
+              </p>
             </Card>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-            <Card className="hover-lift card-shadow bg-destructive/5 border-destructive/20">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-destructive/10 rounded-2xl flex items-center justify-center">
-                    <AlertCircle className="w-6 h-6 text-destructive" />
-                  </div>
-                  <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20">Urgent</Badge>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+            <Card className="bc-card bg-destructive/5 border-destructive/20 p-6">
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 bg-destructive/10 rounded-lg flex items-center justify-center">
+                  <AlertCircle className="w-5 h-5 text-destructive" />
                 </div>
-                <h3 className="text-2xl font-bold">{stats.urgentCases}</h3>
-                <p className="text-sm text-muted-foreground">Require Attention</p>
-              </CardContent>
+                <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30 text-xs">Urgent</Badge>
+              </div>
+              <p className="bc-metric">{stats.urgentCases}</p>
+              <p className="bc-metric-label mt-1">Require Attention</p>
             </Card>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
             <Card
-              className="hover-lift card-shadow bg-accent/5 border-accent/20 cursor-pointer transition-all hover:border-accent/40 hover:shadow-lg"
+              className="bc-stat-card bg-tertiary/5 border-tertiary/20 hover:border-tertiary/40"
               onClick={() => setShowAllPatients(true)}
             >
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-accent/10 rounded-2xl flex items-center justify-center">
-                    <Users className="w-6 h-6 text-accent" />
-                  </div>
-                  <Badge variant="outline" className="bg-accent/10 text-accent border-accent/20">System</Badge>
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 bg-tertiary/10 rounded-lg flex items-center justify-center">
+                  <Users className="w-5 h-5 text-tertiary" />
                 </div>
-                <h3 className="text-2xl font-bold">{allPatients.length}</h3>
-                <p className="text-sm text-muted-foreground">All Patients</p>
-                <p className="text-xs text-accent mt-2 font-medium">Click to view →</p>
-              </CardContent>
+                <Badge variant="outline" className="bg-tertiary/10 text-tertiary border-tertiary/30 text-xs">System</Badge>
+              </div>
+              <p className="bc-metric">{allPatients.length}</p>
+              <p className="bc-metric-label mt-1">All Patients</p>
+              <p className="text-xs text-tertiary mt-2 font-medium flex items-center gap-1">
+                Click to view <ArrowRight className="w-3 h-3" />
+              </p>
             </Card>
           </motion.div>
         </div>
 
         {/* Today's Schedule Preview */}
-        <Card className="mb-6 card-shadow hover-lift">
-          <CardHeader>
+        <Card className="mb-4 bc-card">
+          <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-2xl flex items-center gap-2">
-                  <Calendar className="w-6 h-6 text-primary" />
-                  Today's Schedule
-                </CardTitle>
-                <CardDescription>Your appointments for today</CardDescription>
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                  <Calendar className="w-4 h-4 text-primary" />
+                </div>
+                <div>
+                  <CardTitle className="text-base font-semibold">Today's Schedule</CardTitle>
+                  <CardDescription className="text-xs">Your appointments for today</CardDescription>
+                </div>
               </div>
               <Button
-                className="btn-press gradient-royal"
+                className="btn-press bg-primary text-primary-foreground hover:bg-primary/90"
+                size="sm"
                 onClick={() => setShowAllAppointments(true)}
               >
                 View All
@@ -346,11 +345,11 @@ const DoctorDashboard = () => {
           <CardContent>
             {todayAppointments.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                <Calendar className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                <p>No appointments scheduled for today</p>
+                <Calendar className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                <p className="text-sm">No appointments scheduled for today</p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-2">
                 {todayAppointments.slice(0, 3).map((apt) => {
                   const time = new Date(apt.scheduled_time).toLocaleTimeString('en-US', {
                     hour: 'numeric',
@@ -359,25 +358,25 @@ const DoctorDashboard = () => {
                   });
 
                   return (
-                    <div key={apt.id} className="p-4 rounded-2xl bg-muted/30 hover-lift flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 gradient-royal rounded-2xl flex items-center justify-center flex-col">
-                          <span className="text-white text-xs font-medium">{time.split(' ')[0]}</span>
-                          <span className="text-white/80 text-xs">{time.split(' ')[1]}</span>
+                    <div key={apt.id} className="p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center flex-col">
+                          <span className="text-primary-foreground text-xs font-medium">{time.split(' ')[0]}</span>
+                          <span className="text-primary-foreground/80 text-xs">{time.split(' ')[1]}</span>
                         </div>
                         <div>
-                          <h4 className="font-semibold">
+                          <h4 className="font-medium text-sm">
                             {apt.patient ? `${apt.patient.first_name} ${apt.patient.last_name}` : 'Patient TBA'}
                           </h4>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-xs text-muted-foreground">
                             {apt.appointment_type?.replace('_', ' ')} - {apt.department?.name || 'General'}
                           </p>
                           {apt.reason && (
-                            <p className="text-xs text-muted-foreground mt-1">"{apt.reason}"</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">"{apt.reason}"</p>
                           )}
                         </div>
                       </div>
-                      <Button variant="outline" className="btn-press">View Details</Button>
+                      <Button variant="outline" size="sm" className="btn-press text-xs">View Details</Button>
                     </div>
                   );
                 })}
@@ -387,18 +386,21 @@ const DoctorDashboard = () => {
         </Card>
 
         {/* Active Patients Preview */}
-        <Card className="card-shadow hover-lift">
-          <CardHeader>
+        <Card className="bc-card">
+          <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-2xl flex items-center gap-2">
-                  <Users className="w-6 h-6 text-secondary" />
-                  Patients Under My Care
-                </CardTitle>
-                <CardDescription>Currently active patients</CardDescription>
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-secondary/10 rounded-lg flex items-center justify-center">
+                  <Users className="w-4 h-4 text-secondary" />
+                </div>
+                <div>
+                  <CardTitle className="text-base font-semibold">Patients Under My Care</CardTitle>
+                  <CardDescription className="text-xs">Currently active patients</CardDescription>
+                </div>
               </div>
               <Button
-                className="btn-press gradient-emerald"
+                className="btn-press bg-secondary text-secondary-foreground hover:bg-secondary/90"
+                size="sm"
                 onClick={() => setShowMyPatients(true)}
               >
                 View All
@@ -408,36 +410,36 @@ const DoctorDashboard = () => {
           <CardContent>
             {myPatients.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                <Users className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                <p>No active patients currently</p>
+                <Users className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                <p className="text-sm">No active patients currently</p>
               </div>
             ) : (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
                 {myPatients.slice(0, 6).map((patient) => (
                   <div
                     key={patient.id}
-                    className="p-4 rounded-2xl bg-muted/30 border border-muted hover-lift cursor-pointer"
+                    className="p-3 rounded-lg bg-muted/50 border hover:border-secondary/40 hover:bg-muted transition-all cursor-pointer"
                     onClick={() => {
                       setSelectedPatient(patient);
                       setShowPatientDetails(true);
                     }}
                   >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="w-12 h-12 bg-gradient-royal rounded-full flex items-center justify-center text-white font-semibold">
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-primary-foreground text-sm font-semibold">
                         {patient.first_name[0]}{patient.last_name[0]}
                       </div>
                       <Badge variant="outline" className={`text-xs ${getStatusColor(patient.visit?.status || patient.status)}`}>
                         {patient.status || patient.visit?.status}
                       </Badge>
                     </div>
-                    <h4 className="font-semibold mb-1">{patient.first_name} {patient.last_name}</h4>
-                    <p className="text-sm text-muted-foreground mb-2">{patient.chief_complaint || 'General consultation'}</p>
+                    <h4 className="font-semibold text-sm mb-1">{patient.first_name} {patient.last_name}</h4>
+                    <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{patient.chief_complaint || 'General consultation'}</p>
                     {patient.triage_level && (
                       <Badge variant="outline" className={`text-xs mb-2 ${getStatusColor(patient.triage_level)}`}>
                         {patient.triage_level}
                       </Badge>
                     )}
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <Clock className="w-3 h-3" />
                       {new Date(patient.check_in_time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                     </div>
@@ -445,6 +447,27 @@ const DoctorDashboard = () => {
                 ))}
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Hospital Doctors Directory */}
+        <Card className="bc-card mt-4">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                <Stethoscope className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <CardTitle className="text-base font-semibold">Hospital Doctors Directory</CardTitle>
+                <CardDescription className="text-xs">View all doctors across departments for collaboration and referrals</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <DoctorList
+              groupByDepartment={true}
+              showSearch={true}
+            />
           </CardContent>
         </Card>
       </main>

@@ -8,127 +8,127 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Luxurious Cream Base - Sophisticated & Calming */
-    --background: 40 35% 97%;
-    --foreground: 220 15% 15%;
+    /* Business Central - Clean & Professional */
+    --background: 0 0% 98%;
+    --foreground: 222 47% 11%;
 
-    --card: 40 40% 99%;
-    --card-foreground: 220 15% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
 
-    --popover: 40 40% 99%;
-    --popover-foreground: 220 15% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
 
-    /* Royal Blue - Trust & Professional Excellence */
-    --primary: 217 91% 60%;
+    /* Professional Blue - Primary Brand Color */
+    --primary: 210 100% 45%;
     --primary-foreground: 0 0% 100%;
 
-    /* Emerald Green - Health, Growth & Wellness */
-    --secondary: 158 64% 52%;
+    /* Teal - Success & Health */
+    --secondary: 174 72% 42%;
     --secondary-foreground: 0 0% 100%;
 
-    /* Soft Purple - Care & Compassion */
-    --tertiary: 262 52% 65%;
+    /* Purple - Information & Analytics */
+    --tertiary: 262 52% 58%;
     --tertiary-foreground: 0 0% 100%;
 
-    /* Gold/Amber - Premium & Attention */
-    --accent: 43 96% 56%;
-    --accent-foreground: 220 15% 15%;
+    /* Orange - Warnings & Attention */
+    --accent: 25 95% 53%;
+    --accent-foreground: 0 0% 100%;
 
-    /* Coral/Rose - Maternity & Warmth */
-    --coral: 14 77% 62%;
+    /* Pink - Care & Special Attention */
+    --coral: 340 82% 52%;
     --coral-foreground: 0 0% 100%;
 
-    /* Teal - Mental Health & Calm */
-    --teal: 184 65% 50%;
+    /* Cyan - Calm & Mental Health */
+    --teal: 189 94% 43%;
     --teal-foreground: 0 0% 100%;
 
-    /* Crimson - Emergency & Critical */
+    /* Red - Critical & Emergency */
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --muted: 40 25% 93%;
-    --muted-foreground: 220 10% 45%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
 
-    --border: 40 20% 88%;
-    --input: 40 25% 94%;
-    --ring: 217 91% 60%;
+    --border: 214 32% 91%;
+    --input: 214 32% 95%;
+    --ring: 210 100% 45%;
 
-    --radius: 1rem;
+    --radius: 0.75rem;
 
-    /* Premium design tokens for 5-star hospital experience */
-    --gradient-royal: linear-gradient(135deg, hsl(217 91% 60%), hsl(237 85% 65%));
-    --gradient-emerald: linear-gradient(135deg, hsl(158 64% 52%), hsl(168 70% 58%));
-    --gradient-coral: linear-gradient(135deg, hsl(14 77% 62%), hsl(24 85% 68%));
-    --gradient-purple: linear-gradient(135deg, hsl(262 52% 65%), hsl(272 58% 70%));
-    --gradient-gold: linear-gradient(135deg, hsl(43 96% 56%), hsl(48 98% 62%));
-    --gradient-teal: linear-gradient(135deg, hsl(184 65% 50%), hsl(194 70% 55%));
+    /* Business Central-inspired gradients - Subtle & Professional */
+    --gradient-royal: linear-gradient(135deg, hsl(210 100% 45%), hsl(220 100% 50%));
+    --gradient-emerald: linear-gradient(135deg, hsl(174 72% 42%), hsl(160 70% 45%));
+    --gradient-coral: linear-gradient(135deg, hsl(340 82% 52%), hsl(350 85% 58%));
+    --gradient-purple: linear-gradient(135deg, hsl(262 52% 58%), hsl(272 55% 62%));
+    --gradient-gold: linear-gradient(135deg, hsl(25 95% 53%), hsl(35 95% 58%));
+    --gradient-teal: linear-gradient(135deg, hsl(189 94% 43%), hsl(195 90% 48%));
 
-    --shadow-sm: 0 1px 2px 0 hsl(220 15% 15% / 0.05);
-    --shadow-card: 0 4px 16px -4px hsl(220 15% 15% / 0.1);
-    --shadow-elevated: 0 12px 40px -8px hsl(220 15% 15% / 0.15);
-    --shadow-luxury: 0 20px 60px -12px hsl(220 15% 15% / 0.2), 0 0 0 1px hsl(220 15% 15% / 0.05);
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-card: 0 2px 4px 0 rgb(0 0 0 / 0.05), 0 1px 2px 0 rgb(0 0 0 / 0.03);
+    --shadow-elevated: 0 4px 8px -2px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.06);
+    --shadow-luxury: 0 12px 24px -4px rgb(0 0 0 / 0.12), 0 4px 8px -4px rgb(0 0 0 / 0.08);
 
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    --transition-spring: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --transition-spring: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 
-    --sidebar-background: 40 35% 96%;
-    --sidebar-foreground: 220 15% 15%;
-    --sidebar-primary: 217 91% 60%;
+    --sidebar-background: 222 47% 11%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 210 100% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 40 30% 92%;
-    --sidebar-accent-foreground: 220 15% 15%;
-    --sidebar-border: 40 20% 88%;
-    --sidebar-ring: 217 91% 60%;
+    --sidebar-accent: 217 33% 17%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 217 33% 20%;
+    --sidebar-ring: 210 100% 45%;
   }
 
   .dark {
-    /* Luxurious Dark Mode - Sophisticated & Premium */
-    --background: 220 18% 10%;
-    --foreground: 40 25% 95%;
+    /* Business Central Dark Mode - Professional & Modern */
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
 
-    --card: 220 20% 14%;
-    --card-foreground: 40 25% 95%;
+    --card: 217 33% 17%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 220 20% 14%;
-    --popover-foreground: 40 25% 95%;
+    --popover: 217 33% 17%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 217 91% 60%;
+    --primary: 210 100% 50%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 158 64% 52%;
+    --secondary: 174 72% 45%;
     --secondary-foreground: 0 0% 100%;
 
-    --tertiary: 262 52% 65%;
+    --tertiary: 262 52% 60%;
     --tertiary-foreground: 0 0% 100%;
 
-    --accent: 43 96% 56%;
-    --accent-foreground: 220 15% 10%;
+    --accent: 25 95% 55%;
+    --accent-foreground: 0 0% 100%;
 
-    --coral: 14 77% 62%;
+    --coral: 340 82% 55%;
     --coral-foreground: 0 0% 100%;
 
-    --teal: 184 65% 50%;
+    --teal: 189 94% 45%;
     --teal-foreground: 0 0% 100%;
 
-    --muted: 220 15% 18%;
-    --muted-foreground: 40 15% 70%;
+    --muted: 217 33% 24%;
+    --muted-foreground: 215 20% 65%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 15% 22%;
-    --input: 220 15% 18%;
-    --ring: 217 91% 60%;
+    --border: 217 33% 25%;
+    --input: 217 33% 24%;
+    --ring: 210 100% 50%;
 
-    --sidebar-background: 220 18% 10%;
-    --sidebar-foreground: 40 25% 95%;
-    --sidebar-primary: 217 91% 60%;
+    --sidebar-background: 222 47% 11%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 210 100% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 15% 18%;
-    --sidebar-accent-foreground: 40 25% 95%;
-    --sidebar-border: 220 15% 22%;
-    --sidebar-ring: 217 91% 60%;
+    --sidebar-accent: 217 33% 20%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 217 33% 25%;
+    --sidebar-ring: 210 100% 50%;
   }
 }
 
@@ -143,18 +143,40 @@ All colors MUST be HSL.
     font-variation-settings: 'opsz' auto;
   }
 
-  /* Premium 5-Star Hospital Aesthetics */
+  /* Polished Input & Form Styles */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="date"],
+  input[type="time"],
+  textarea,
+  select {
+    @apply rounded-xl;
+  }
+
+  /* Calendar Widget Styling */
+  .rdp {
+    @apply rounded-xl;
+  }
+
+  .rdp-day {
+    @apply rounded-lg;
+  }
+
+  /* Business Central Card Aesthetics */
   .glass-effect {
-    @apply backdrop-blur-md bg-card/85 border border-border/60;
+    @apply backdrop-blur-sm bg-card/95 border border-border rounded-xl;
   }
 
   .glass-luxury {
-    @apply backdrop-blur-xl bg-card/90 border border-border/80;
-    box-shadow: var(--shadow-luxury);
+    @apply bg-card border border-border rounded-xl;
+    box-shadow: var(--shadow-card);
   }
 
   .hover-lift {
-    @apply transition-all duration-300 hover:-translate-y-1;
+    @apply transition-all duration-200 hover:-translate-y-1;
   }
 
   .hover-lift:hover {
@@ -162,45 +184,64 @@ All colors MUST be HSL.
   }
 
   .hover-scale {
-    @apply transition-transform duration-300 hover:scale-105;
+    @apply transition-transform duration-200 hover:scale-[1.02];
   }
 
   .hover-glow {
-    @apply transition-all duration-300;
+    @apply transition-all duration-200;
   }
 
   .hover-glow:hover {
-    box-shadow: 0 0 30px hsl(var(--primary) / 0.3);
+    box-shadow: 0 0 0 3px hsl(var(--primary) / 0.1);
   }
 
-  .soft-shadow {
-    box-shadow: var(--shadow-sm);
-  }
 
-  .card-shadow {
-    box-shadow: var(--shadow-card);
-  }
-
-  .elevated-shadow {
-    box-shadow: var(--shadow-elevated);
-  }
-
-  .luxury-shadow {
-    box-shadow: var(--shadow-luxury);
-  }
-
-  /* Button Animation Classes */
+  /* Business Central Button Interactions */
   .btn-press {
-    @apply transition-all duration-150 active:scale-95;
+    @apply transition-all duration-150 active:scale-[0.98];
   }
 
   .btn-spring {
-    @apply transition-all duration-500;
+    @apply transition-all duration-300;
     transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
   .btn-pulse {
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* Business Central Card Styles - Enhanced */
+  .bc-card {
+    @apply bg-card rounded-2xl border border-border transition-all duration-200;
+    box-shadow: var(--shadow-card);
+  }
+
+  .bc-card:hover {
+    @apply border-primary/30;
+    box-shadow: var(--shadow-elevated);
+  }
+
+  .bc-stat-card {
+    @apply bg-card rounded-2xl border border-border p-6 transition-all duration-200 hover:-translate-y-1 cursor-pointer;
+    box-shadow: var(--shadow-card);
+  }
+
+  .bc-stat-card:hover {
+    @apply border-primary/30;
+    box-shadow: var(--shadow-elevated);
+  }
+
+  .bc-metric {
+    @apply text-3xl font-bold tracking-tight;
+  }
+
+  .bc-metric-label {
+    @apply text-xs font-semibold text-muted-foreground uppercase tracking-wider;
+  }
+
+  /* Polished Action Card */
+  .bc-action-card {
+    @apply bc-card p-5 hover-lift cursor-pointer bg-gradient-to-br;
   }
 
   /* Gradient Backgrounds */
@@ -228,7 +269,7 @@ All colors MUST be HSL.
     background: var(--gradient-teal);
   }
 
-  /* Shimmer Effect for Premium Feel */
+  /* Subtle Shimmer Effect for Loading States */
   .shimmer {
     position: relative;
     overflow: hidden;
@@ -244,10 +285,10 @@ All colors MUST be HSL.
     background: linear-gradient(
       90deg,
       transparent 0%,
-      rgba(255, 255, 255, 0.1) 50%,
+      rgba(255, 255, 255, 0.05) 50%,
       transparent 100%
     );
-    animation: shimmer 2.5s ease-in-out infinite;
+    animation: shimmer 3s ease-in-out infinite;
   }
 
   @keyframes shimmer {
@@ -273,24 +314,41 @@ All colors MUST be HSL.
     scroll-behavior: smooth;
   }
 
-  /* Custom scrollbar */
+  /* Modern Business Central Scrollbar */
   ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
   }
 
   ::-webkit-scrollbar-track {
     background: hsl(var(--muted));
-    border-radius: 10px;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: hsl(var(--primary) / 0.3);
-    border-radius: 10px;
-    transition: background 0.3s ease;
+    background: hsl(var(--muted-foreground) / 0.2);
+    border-radius: 4px;
+    transition: background 0.2s ease;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--primary) / 0.5);
+    background: hsl(var(--muted-foreground) / 0.4);
+  }
+}
+
+@layer utilities {
+  .soft-shadow {
+    box-shadow: var(--shadow-sm);
+  }
+
+  .card-shadow {
+    box-shadow: var(--shadow-card);
+  }
+
+  .elevated-shadow {
+    box-shadow: var(--shadow-elevated);
+  }
+
+  .luxury-shadow {
+    box-shadow: var(--shadow-card);
   }
 }

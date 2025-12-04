@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { motion } from "framer-motion";
 import { formatCurrency } from "@/lib/currency";
+import { DoctorList } from "@/components/DoctorList";
 import {
   Users,
   Calendar,
@@ -432,11 +433,14 @@ const AdminDashboardEnhanced = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <Shield className="w-12 h-12 text-primary mx-auto mb-4 animate-pulse" />
-          <p className="text-muted-foreground">Loading Admin Dashboard...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <motion.div
+          className="w-16 h-16 bg-primary rounded-lg flex items-center justify-center shadow-card"
+          animate={{ rotate: [0, 360] }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+        >
+          <Shield className="w-8 h-8 text-primary-foreground" />
+        </motion.div>
       </div>
     );
   }
@@ -467,24 +471,26 @@ const AdminDashboardEnhanced = () => {
   }, {} as Record<string, any[]>);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+      <header className="bg-card border-b sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Shield className="w-8 h-8 text-primary" />
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center shadow-sm">
+                <Shield className="w-6 h-6 text-primary-foreground" />
+              </div>
               <div>
-                <h1 className="text-2xl font-bold text-slate-900">System Administrator</h1>
-                <p className="text-sm text-muted-foreground">Full System Access • {user?.email}</p>
+                <h1 className="font-semibold text-xl text-foreground">System Administrator</h1>
+                <p className="text-xs text-muted-foreground">Full System Access • {user?.email}</p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <Button onClick={() => fetchAllData()} variant="outline" className="hover-lift">
+            <div className="flex items-center gap-2">
+              <Button onClick={() => fetchAllData()} variant="outline" size="sm" className="btn-press">
                 <Activity className="w-4 h-4 mr-2" />
-                Refresh Data
+                Refresh
               </Button>
-              <Button onClick={handleLogout} variant="outline" className="hover-lift">
+              <Button onClick={handleLogout} variant="outline" size="sm" className="btn-press">
                 <LogOut className="w-4 h-4 mr-2" />
                 Logout
               </Button>
@@ -495,145 +501,129 @@ const AdminDashboardEnhanced = () => {
 
       {/* Main Content */}
       <div className="container mx-auto px-6 py-8">
-        {/* Stats Grid - Clickable Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {/* Patients Card - Clickable */}
+        {/* Stats Grid - Business Central Style */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          {/* Patients Card */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+          >
+            <Card
+              className="bc-stat-card bg-primary/5 border-primary/20 hover:border-primary/40"
+              onClick={() => setShowPatientModal(true)}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                  <Users className="w-5 h-5 text-primary" />
+                </div>
+                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-xs">Total</Badge>
+              </div>
+              <p className="bc-metric">{stats.totalPatients}</p>
+              <p className="bc-metric-label mt-1">Patients</p>
+              <p className="text-xs text-primary mt-2 font-medium">Click to manage →</p>
+            </Card>
+          </motion.div>
+
+          {/* Appointments Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            onClick={() => setShowPatientModal(true)}
-            className="cursor-pointer"
           >
-            <Card className="hover-lift bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0 hover:shadow-2xl transition-all">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-medium text-blue-100">Total Patients</CardTitle>
-                  <Users className="w-5 h-5 text-blue-200" />
+            <Card
+              className="bc-stat-card bg-secondary/5 border-secondary/20 hover:border-secondary/40"
+              onClick={() => setShowAppointmentModal(true)}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 bg-secondary/10 rounded-lg flex items-center justify-center">
+                  <Calendar className="w-5 h-5 text-secondary" />
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{stats.totalPatients}</div>
-                <p className="text-xs text-blue-100 mt-1">Click to manage →</p>
-              </CardContent>
+                <Badge variant="outline" className="bg-secondary/10 text-secondary border-secondary/30 text-xs">Today: {stats.todayAppointments}</Badge>
+              </div>
+              <p className="bc-metric">{stats.totalAppointments}</p>
+              <p className="bc-metric-label mt-1">Appointments</p>
+              <p className="text-xs text-secondary mt-2 font-medium">Click to view →</p>
             </Card>
           </motion.div>
 
-          {/* Appointments Card - Clickable */}
+          {/* Prescriptions Card */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+          >
+            <Card
+              className="bc-stat-card bg-tertiary/5 border-tertiary/20 hover:border-tertiary/40"
+              onClick={() => setShowPrescriptionModal(true)}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 bg-tertiary/10 rounded-lg flex items-center justify-center">
+                  <Pill className="w-5 h-5 text-tertiary" />
+                </div>
+                <Badge variant="outline" className="bg-tertiary/10 text-tertiary border-tertiary/30 text-xs">Rx</Badge>
+              </div>
+              <p className="bc-metric">{stats.totalPrescriptions}</p>
+              <p className="bc-metric-label mt-1">Prescriptions</p>
+              <p className="text-xs text-tertiary mt-2 font-medium">Click to manage →</p>
+            </Card>
+          </motion.div>
+
+          {/* Revenue Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            onClick={() => setShowAppointmentModal(true)}
-            className="cursor-pointer"
           >
-            <Card className="hover-lift bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-0 hover:shadow-2xl transition-all">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-medium text-emerald-100">Appointments</CardTitle>
-                  <Calendar className="w-5 h-5 text-emerald-200" />
+            <Card
+              className="bc-stat-card bg-accent/5 border-accent/20 hover:border-accent/40"
+              onClick={() => setShowBillingModal(true)}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center">
+                  <Wallet className="w-5 h-5 text-accent" />
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{stats.totalAppointments}</div>
-                <p className="text-xs text-emerald-100 mt-1">{stats.todayAppointments} today • Click to view →</p>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Prescriptions Card - Clickable */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            onClick={() => setShowPrescriptionModal(true)}
-            className="cursor-pointer"
-          >
-            <Card className="hover-lift bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0 hover:shadow-2xl transition-all">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-medium text-purple-100">Prescriptions</CardTitle>
-                  <Pill className="w-5 h-5 text-purple-200" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{stats.totalPrescriptions}</div>
-                <p className="text-xs text-purple-100 mt-1">Click to manage →</p>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Revenue Card - Clickable */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            onClick={() => setShowBillingModal(true)}
-            className="cursor-pointer"
-          >
-            <Card className="hover-lift bg-gradient-to-br from-amber-500 to-amber-600 text-white border-0 hover:shadow-2xl transition-all">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-medium text-amber-100">Total Revenue</CardTitle>
-                  <Wallet className="w-5 h-5 text-amber-200" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">{formatCurrency(stats.totalRevenue)}</div>
-                <p className="text-xs text-amber-100 mt-1">{formatCurrency(stats.pendingPayments)} pending • Click →</p>
-              </CardContent>
+                <Badge variant="outline" className="bg-accent/10 text-accent border-accent/30 text-xs">Revenue</Badge>
+              </div>
+              <p className="bc-metric">{formatCurrency(stats.totalRevenue)}</p>
+              <p className="bc-metric-label mt-1">Total Revenue</p>
+              <p className="text-xs text-accent mt-2 font-medium">{formatCurrency(stats.pendingPayments)} pending</p>
             </Card>
           </motion.div>
         </div>
 
         {/* Additional Stats Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="hover-lift">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium">Active Staff</CardTitle>
-                <Stethoscope className="w-5 h-5 text-primary" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.activeStaff}</div>
-            </CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <Card className="bc-card p-4">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase">Active Staff</p>
+              <Stethoscope className="w-4 h-4 text-primary" />
+            </div>
+            <p className="text-2xl font-semibold">{stats.activeStaff}</p>
           </Card>
 
-          <Card className="hover-lift">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium">Critical Patients</CardTitle>
-                <Activity className="w-5 h-5 text-destructive" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-destructive">{stats.criticalPatients}</div>
-            </CardContent>
+          <Card className="bc-card p-4">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase">Critical Patients</p>
+              <Activity className="w-4 h-4 text-destructive" />
+            </div>
+            <p className="text-2xl font-semibold">{stats.criticalPatients}</p>
           </Card>
 
-          <Card className="hover-lift">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium">Unpaid Bills</CardTitle>
-                <AlertCircle className="w-5 h-5 text-amber-600" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-amber-600">{stats.unpaidBills}</div>
-            </CardContent>
+          <Card className="bc-card p-4">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase">Unpaid Bills</p>
+              <Receipt className="w-4 h-4 text-accent" />
+            </div>
+            <p className="text-2xl font-semibold">{stats.unpaidBills}</p>
           </Card>
 
-          <Card className="hover-lift">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium">Departments</CardTitle>
-                <Building2 className="w-5 h-5 text-secondary" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{departments.length}</div>
-            </CardContent>
+          <Card className="bc-card p-4">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase">Overdue Payments</p>
+              <CreditCard className="w-4 h-4 text-destructive" />
+            </div>
+            <p className="text-2xl font-semibold">{stats.overduePayments}</p>
           </Card>
         </div>
 
@@ -669,6 +659,25 @@ const AdminDashboardEnhanced = () => {
                 className="pl-10"
               />
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Hospital Staff Directory */}
+        <Card className="mb-6 card-shadow hover-lift">
+          <CardHeader>
+            <CardTitle className="text-2xl flex items-center gap-2">
+              <Stethoscope className="w-6 h-6 text-primary" />
+              Hospital Doctors Directory
+            </CardTitle>
+            <CardDescription>
+              Complete list of all doctors organized by department for staff management and coordination
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DoctorList
+              groupByDepartment={true}
+              showSearch={true}
+            />
           </CardContent>
         </Card>
 

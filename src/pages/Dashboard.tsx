@@ -335,31 +335,30 @@ const Dashboard = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-primary/5 to-background">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <motion.div
-          className="flex flex-col items-center gap-6"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
+          className="flex flex-col items-center gap-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
         >
           <motion.div
-            className="w-20 h-20 bg-gradient-royal rounded-3xl flex items-center justify-center luxury-shadow"
+            className="w-16 h-16 bg-primary rounded-lg flex items-center justify-center shadow-card"
             animate={{
-              rotate: [0, 360],
-              scale: [1, 1.1, 1]
+              rotate: [0, 360]
             }}
             transition={{
-              duration: 2,
+              duration: 1,
               repeat: Infinity,
-              ease: "easeInOut"
+              ease: "linear"
             }}
           >
-            <Hospital className="w-10 h-10 text-white" />
+            <Hospital className="w-8 h-8 text-primary-foreground" />
           </motion.div>
           <motion.div
-            className="text-muted-foreground text-lg font-medium"
+            className="text-muted-foreground text-sm font-medium"
             animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 2, repeat: Infinity }}
+            transition={{ duration: 1.5, repeat: Infinity }}
           >
             Loading HospitalGuard...
           </motion.div>
@@ -371,33 +370,27 @@ const Dashboard = () => {
   const currentDept = departments.find(d => d.id === selectedDepartment) || departments[0];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background">
-      {/* Luxurious Header */}
-      <header className="glass-luxury sticky top-0 z-50 border-b">
+    <div className="min-h-screen bg-background">
+      {/* Business Central Header */}
+      <header className="bg-card border-b sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <motion.div
               className="flex items-center gap-4"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.3 }}
             >
-              <div className="relative">
-                <div className="absolute inset-0 bg-primary/20 rounded-3xl blur-2xl animate-pulse"></div>
-                <div className="relative w-14 h-14 gradient-royal rounded-3xl flex items-center justify-center luxury-shadow hover-scale">
-                  <Hospital className="w-8 h-8 text-white" />
-                </div>
+              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center shadow-sm">
+                <Hospital className="w-6 h-6 text-primary-foreground" />
               </div>
               <div>
-                <h1 className="font-bold text-2xl tracking-tight bg-gradient-to-r from-primary via-secondary to-tertiary bg-clip-text text-transparent">
+                <h1 className="font-semibold text-xl text-foreground">
                   HospitalGuard
                 </h1>
-                <div className="flex items-center gap-2 mt-1">
-                  <Hospital className="w-3.5 h-3.5 text-accent" />
-                  <p className="text-xs text-muted-foreground font-medium">
-                    {roles.map(r => r.charAt(0).toUpperCase() + r.slice(1)).join(" • ") || "Staff Member"}
-                  </p>
-                </div>
+                <p className="text-xs text-muted-foreground">
+                  {roles.map(r => r.charAt(0).toUpperCase() + r.slice(1)).join(" • ") || "Staff Member"}
+                </p>
               </div>
             </motion.div>
 
@@ -405,9 +398,9 @@ const Dashboard = () => {
               className="flex items-center gap-3"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.3 }}
             >
-              <Badge variant="outline" className="px-3 py-1.5 bg-secondary/10 text-secondary border-secondary/20">
+              <Badge variant="outline" className="bg-secondary/10 text-secondary border-secondary/30">
                 <Activity className="w-3 h-3 mr-1.5" />
                 Online
               </Badge>
@@ -415,7 +408,7 @@ const Dashboard = () => {
                 onClick={handleLogout}
                 variant="outline"
                 size="sm"
-                className="hover-lift card-shadow btn-press"
+                className="btn-press"
               >
                 <LogOut className="w-4 h-4 mr-2" />
                 Logout
@@ -427,96 +420,108 @@ const Dashboard = () => {
 
       {/* Main Dashboard Content */}
       <main className="container mx-auto px-6 py-8">
-        {/* Hero Stats Section */}
+        {/* Department Header */}
         <motion.div
-          className={`mb-8 p-8 rounded-3xl ${currentDept.gradient} text-white luxury-shadow overflow-hidden relative`}
+          className="mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.3 }}
         >
-          <div className="absolute inset-0 shimmer opacity-20"></div>
-          <div className="relative z-10">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
-                <currentDept.icon className="w-8 h-8" />
-              </div>
-              <div>
-                <h2 className="text-4xl font-bold tracking-tight">{currentDept.name}</h2>
-                <p className="text-white/90 text-lg mt-1">{currentDept.description}</p>
-              </div>
+          <div className="flex items-center gap-3 mb-2">
+            <div className={`w-12 h-12 ${currentDept.color} bg-current/10 rounded-lg flex items-center justify-center`}>
+              <currentDept.icon className={`w-6 h-6 ${currentDept.color}`} />
             </div>
-
-            {currentDept.stats && (
-              <div className="grid grid-cols-3 gap-6 mt-8">
-                {currentDept.stats.map((stat, index) => (
-                  <motion.div
-                    key={index}
-                    className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 hover-lift"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <p className="text-white/80 text-sm font-medium mb-2">{stat.label}</p>
-                    <div className="flex items-end gap-2">
-                      <p className="text-3xl font-bold">{stat.value}</p>
-                      {stat.trend && stat.trend !== "stable" && (
-                        <Badge variant="secondary" className="mb-1 bg-white/20 text-white border-none">
-                          {stat.trend}
-                        </Badge>
-                      )}
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            )}
+            <div>
+              <h2 className="text-2xl font-semibold text-foreground">{currentDept.name}</h2>
+              <p className="text-sm text-muted-foreground">{currentDept.description}</p>
+            </div>
           </div>
         </motion.div>
 
-        {/* Department Tabs */}
-        <Tabs value={selectedDepartment} onValueChange={setSelectedDepartment} className="w-full">
-          <TabsList className="w-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 bg-card/80 backdrop-blur-md p-4 rounded-3xl luxury-shadow mb-8 gap-3 h-auto">
-            {departments.map((dept) => (
-              <TabsTrigger
-                key={dept.id}
-                value={dept.id}
-                className="flex items-center justify-center gap-3 px-6 py-5 rounded-2xl btn-press text-base font-semibold transition-all duration-300 data-[state=active]:gradient-royal data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 data-[state=inactive]:hover:bg-muted/50 data-[state=inactive]:text-foreground cursor-pointer h-auto"
+        {/* Stats Cards - Business Central Style */}
+        {currentDept.stats && (
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
+          >
+            {currentDept.stats.map((stat, index) => (
+              <motion.div
+                key={index}
+                className="bc-stat-card"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
               >
-                <dept.icon className="w-6 h-6 flex-shrink-0" />
-                <span className="text-base whitespace-nowrap">{dept.name}</span>
-              </TabsTrigger>
+                <div className="flex flex-col h-full">
+                  <p className="bc-metric-label mb-2">{stat.label}</p>
+                  <div className="flex items-baseline gap-2 mt-auto">
+                    <p className="bc-metric">{stat.value}</p>
+                    {stat.trend && stat.trend !== "stable" && (
+                      <Badge variant="outline" className={`
+                        ${stat.trend.startsWith('+') ? 'bg-secondary/10 text-secondary border-secondary/30' : ''}
+                        ${stat.trend === 'critical' ? 'bg-destructive/10 text-destructive border-destructive/30' : ''}
+                        text-xs font-medium
+                      `}>
+                        <TrendingUp className="w-3 h-3 mr-1" />
+                        {stat.trend}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
             ))}
-          </TabsList>
+          </motion.div>
+        )}
+
+        {/* Department Navigation */}
+        <Tabs value={selectedDepartment} onValueChange={setSelectedDepartment} className="w-full">
+          <div className="bg-card border rounded-2xl p-3 mb-6 shadow-card overflow-x-auto">
+            <TabsList className="w-full inline-flex items-center gap-2 h-auto bg-transparent">
+              {departments.map((dept) => (
+                <TabsTrigger
+                  key={dept.id}
+                  value={dept.id}
+                  className="flex items-center gap-2 px-5 py-3 rounded-xl btn-press text-sm font-semibold transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm data-[state=inactive]:hover:bg-muted/50 data-[state=inactive]:text-muted-foreground whitespace-nowrap"
+                >
+                  <dept.icon className="w-4 h-4" />
+                  <span>{dept.name}</span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
 
           {/* Department Content */}
           {departments.map((dept) => (
             <TabsContent key={dept.id} value={dept.id} className="mt-0">
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
+                transition={{ duration: 0.2 }}
               >
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {/* Quick Actions Card */}
-                  <Card className="hover-lift card-shadow bg-card/50 backdrop-blur-sm border-border/50">
-                    <CardHeader>
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className={`w-12 h-12 ${dept.color} bg-current/10 rounded-xl flex items-center justify-center`}>
-                          <ClipboardPlus className={`w-6 h-6 ${dept.color}`} />
+                  <Card className="bc-card">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className={`w-9 h-9 ${dept.color} bg-current/10 rounded-xl flex items-center justify-center`}>
+                          <ClipboardPlus className={`w-5 h-5 ${dept.color}`} />
                         </div>
-                        <CardTitle className="text-xl">Quick Actions</CardTitle>
+                        <CardTitle className="text-base font-semibold">Quick Actions</CardTitle>
                       </div>
-                      <CardDescription>Common tasks for {dept.name}</CardDescription>
+                      <CardDescription className="text-xs">Common tasks for {dept.name}</CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-3">
-                      <Button variant="outline" className="w-full justify-start btn-press hover-lift">
+                    <CardContent className="space-y-2">
+                      <Button variant="outline" className="w-full justify-start btn-press text-sm h-10 rounded-xl">
                         <UserCheck className="w-4 h-4 mr-2" />
                         Check In Patient
                       </Button>
-                      <Button variant="outline" className="w-full justify-start btn-press hover-lift">
+                      <Button variant="outline" className="w-full justify-start btn-press text-sm h-10 rounded-xl">
                         <FileText className="w-4 h-4 mr-2" />
                         View Records
                       </Button>
-                      <Button variant="outline" className="w-full justify-start btn-press hover-lift">
+                      <Button variant="outline" className="w-full justify-start btn-press text-sm h-10 rounded-xl">
                         <Calendar className="w-4 h-4 mr-2" />
                         Schedule Appointment
                       </Button>
@@ -524,22 +529,22 @@ const Dashboard = () => {
                   </Card>
 
                   {/* Active Patients/Tasks */}
-                  <Card className="hover-lift card-shadow bg-card/50 backdrop-blur-sm border-border/50">
-                    <CardHeader>
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className={`w-12 h-12 ${dept.color} bg-current/10 rounded-xl flex items-center justify-center`}>
-                          <Users className={`w-6 h-6 ${dept.color}`} />
+                  <Card className="bc-card">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className={`w-8 h-8 ${dept.color} bg-current/10 rounded-md flex items-center justify-center`}>
+                          <Users className={`w-4 h-4 ${dept.color}`} />
                         </div>
-                        <CardTitle className="text-xl">Active Now</CardTitle>
+                        <CardTitle className="text-base font-semibold">Active Now</CardTitle>
                       </div>
-                      <CardDescription>Current patients and activities</CardDescription>
+                      <CardDescription className="text-xs">Current patients and activities</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-4">
+                      <div className="space-y-2">
                         {[1, 2, 3].map((i) => (
-                          <div key={i} className="flex items-center justify-between p-3 bg-muted/30 rounded-xl hover-lift cursor-pointer">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 bg-gradient-royal rounded-full flex items-center justify-center text-white font-semibold">
+                          <div key={i} className="flex items-center justify-between p-2.5 bg-muted/50 rounded-md hover:bg-muted transition-colors cursor-pointer">
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-xs font-semibold">
                                 P{i}
                               </div>
                               <div>
@@ -555,30 +560,30 @@ const Dashboard = () => {
                   </Card>
 
                   {/* Notifications/Alerts */}
-                  <Card className="hover-lift card-shadow bg-card/50 backdrop-blur-sm border-border/50">
-                    <CardHeader>
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className={`w-12 h-12 ${dept.color} bg-current/10 rounded-xl flex items-center justify-center`}>
-                          <AlertCircle className={`w-6 h-6 ${dept.color}`} />
+                  <Card className="bc-card">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className={`w-8 h-8 ${dept.color} bg-current/10 rounded-md flex items-center justify-center`}>
+                          <AlertCircle className={`w-4 h-4 ${dept.color}`} />
                         </div>
-                        <CardTitle className="text-xl">Alerts</CardTitle>
+                        <CardTitle className="text-base font-semibold">Alerts</CardTitle>
                       </div>
-                      <CardDescription>Important notifications</CardDescription>
+                      <CardDescription className="text-xs">Important notifications</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-3">
-                        <div className="p-3 bg-secondary/10 border border-secondary/20 rounded-xl">
+                      <div className="space-y-2">
+                        <div className="p-2.5 bg-secondary/10 border border-secondary/20 rounded-md">
                           <div className="flex items-start gap-2">
-                            <CheckCircle2 className="w-4 h-4 text-secondary mt-0.5" />
+                            <CheckCircle2 className="w-4 h-4 text-secondary mt-0.5 flex-shrink-0" />
                             <div>
                               <p className="text-sm font-medium">All systems operational</p>
                               <p className="text-xs text-muted-foreground">Last checked: 2 min ago</p>
                             </div>
                           </div>
                         </div>
-                        <div className="p-3 bg-accent/10 border border-accent/20 rounded-xl">
+                        <div className="p-2.5 bg-accent/10 border border-accent/20 rounded-md">
                           <div className="flex items-start gap-2">
-                            <Clock className="w-4 h-4 text-accent mt-0.5" />
+                            <Clock className="w-4 h-4 text-accent mt-0.5 flex-shrink-0" />
                             <div>
                               <p className="text-sm font-medium">3 pending reviews</p>
                               <p className="text-xs text-muted-foreground">Requires attention</p>
@@ -591,20 +596,20 @@ const Dashboard = () => {
                 </div>
 
                 {/* Coming Soon Features */}
-                <Card className="mt-6 luxury-shadow bg-gradient-to-br from-card/80 to-card/50 backdrop-blur-sm border-border/50">
-                  <CardHeader>
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-gradient-gold rounded-xl flex items-center justify-center">
-                        <Hospital className="w-6 h-6 text-white" />
+                <Card className="mt-4 bc-card bg-muted/30">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-primary rounded-md flex items-center justify-center">
+                        <Hospital className="w-4 h-4 text-primary-foreground" />
                       </div>
                       <div>
-                        <CardTitle className="text-2xl">Coming Soon to {dept.name}</CardTitle>
-                        <CardDescription className="text-base">Exciting features in development</CardDescription>
+                        <CardTitle className="text-base font-semibold">Coming Soon to {dept.name}</CardTitle>
+                        <CardDescription className="text-xs">Exciting features in development</CardDescription>
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-muted-foreground">
+                    <p className="text-sm text-muted-foreground">
                       Full {dept.name.toLowerCase()} management features including patient tracking,
                       digital workflows, real-time monitoring, and comprehensive reporting are currently
                       being developed. Stay tuned for updates!

@@ -14,6 +14,7 @@ import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
+import { DoctorSelector } from "@/components/DoctorSelector";
 import {
   Activity,
   Calendar,
@@ -27,7 +28,8 @@ import {
   Video,
   User,
   TrendingUp,
-  CheckCircle2
+  CheckCircle2,
+  ArrowRight
 } from "lucide-react";
 
 interface Department { id: string; name: string; }
@@ -261,7 +263,7 @@ const PatientDashboard = () => {
         .from('hospital_staff')
         .select('id, first_name, last_name, specialization, email, department_id')
         .eq('is_active', true)
-        .eq('role', 'doctor')
+        .eq('staff_type', 'doctor')
         .order('last_name');
       if (departmentId) {
         query = query.eq('department_id', departmentId);
@@ -360,7 +362,7 @@ const PatientDashboard = () => {
         .from('hospital_staff')
         .select('id, first_name, last_name, specialization, email, department_id')
         .eq('department_id', onboardingForm.department_id)
-        .eq('role', 'doctor')
+        .eq('staff_type', 'doctor')
         .eq('is_active', true)
         .order('id');
       if (doctorError) throw doctorError;
@@ -401,38 +403,35 @@ const PatientDashboard = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-primary/5 to-background">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <motion.div
-          className="w-20 h-20 gradient-royal rounded-3xl flex items-center justify-center luxury-shadow"
-          animate={{ rotate: [0, 360], scale: [1, 1.1, 1] }}
-          transition={{ duration: 2, repeat: Infinity }}
+          className="w-16 h-16 bg-primary rounded-lg flex items-center justify-center shadow-card"
+          animate={{ rotate: [0, 360] }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
         >
-          <Hospital className="w-10 h-10 text-white" />
+          <Hospital className="w-8 h-8 text-primary-foreground" />
         </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary/5 to-background">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="glass-luxury sticky top-0 z-50 border-b">
+      <header className="bg-card border-b sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="relative">
-              <div className="absolute inset-0 bg-primary/20 rounded-3xl blur-2xl animate-pulse"></div>
-              <div className="relative w-14 h-14 gradient-royal rounded-3xl flex items-center justify-center luxury-shadow">
-                <User className="w-8 h-8 text-white" />
-              </div>
+            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center shadow-sm">
+              <User className="w-6 h-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="font-bold text-2xl tracking-tight">Patient Portal</h1>
+              <h1 className="font-semibold text-xl text-foreground">Patient Portal</h1>
               <p className="text-xs text-muted-foreground">
                 Welcome back, {patientData ? `${patientData.first_name} ${patientData.last_name}` : (typeof user?.user_metadata?.full_name === 'string' ? user?.user_metadata?.full_name : 'Patient')}
               </p>
             </div>
           </div>
-          <Button onClick={handleLogout} variant="outline" size="sm" className="btn-press hover-lift">
+          <Button onClick={handleLogout} variant="outline" size="sm" className="btn-press">
             <LogOut className="w-4 h-4 mr-2" />
             Logout
           </Button>
@@ -440,62 +439,60 @@ const PatientDashboard = () => {
       </header>
 
       <main className="container mx-auto px-6 py-8">
-        {/* Quick Stats */}
-        <div className="grid gap-6 md:grid-cols-4 mb-8">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        {/* Quick Stats - Business Central Style */}
+        <div className="grid gap-4 md:grid-cols-4 mb-6">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
             <Card
-              className="hover-lift card-shadow bg-primary/5 border-primary/20 cursor-pointer transition-all hover:border-primary/40 hover:shadow-lg"
+              className="bc-stat-card bg-primary/5 border-primary/20 hover:border-primary/40"
               onClick={() => setShowAllAppointments(true)}
             >
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center">
-                    <Calendar className="w-6 h-6 text-primary" />
-                  </div>
-                  <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">Upcoming</Badge>
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                  <Calendar className="w-5 h-5 text-primary" />
                 </div>
-                <h3 className="text-2xl font-bold">{appointments.length}</h3>
-                <p className="text-sm text-muted-foreground">Appointments</p>
-                <p className="text-xs text-primary mt-2 font-medium">Click to manage →</p>
-              </CardContent>
+                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30 text-xs">Upcoming</Badge>
+              </div>
+              <p className="bc-metric">{appointments.length}</p>
+              <p className="bc-metric-label mt-1">Appointments</p>
+              <p className="text-xs text-primary mt-2 font-medium flex items-center gap-1">
+                Click to manage <ArrowRight className="w-3 h-3" />
+              </p>
             </Card>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
             <Card
-              className="hover-lift card-shadow bg-secondary/5 border-secondary/20 cursor-pointer transition-all hover:border-secondary/40 hover:shadow-lg"
+              className="bc-stat-card bg-secondary/5 border-secondary/20 hover:border-secondary/40"
               onClick={() => setShowAllPrescriptions(true)}
             >
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-secondary/10 rounded-2xl flex items-center justify-center">
-                    <Pill className="w-6 h-6 text-secondary" />
-                  </div>
-                  <Badge variant="outline" className="bg-secondary/10 text-secondary border-secondary/20">Active</Badge>
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 bg-secondary/10 rounded-lg flex items-center justify-center">
+                  <Pill className="w-5 h-5 text-secondary" />
                 </div>
-                <h3 className="text-2xl font-bold">{prescriptions.length}</h3>
-                <p className="text-sm text-muted-foreground">Prescriptions</p>
-                <p className="text-xs text-secondary mt-2 font-medium">Click to manage →</p>
-              </CardContent>
+                <Badge variant="outline" className="bg-secondary/10 text-secondary border-secondary/30 text-xs">Active</Badge>
+              </div>
+              <p className="bc-metric">{prescriptions.length}</p>
+              <p className="bc-metric-label mt-1">Prescriptions</p>
+              <p className="text-xs text-secondary mt-2 font-medium flex items-center gap-1">
+                Click to manage <ArrowRight className="w-3 h-3" />
+              </p>
             </Card>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-            <Card className="hover-lift card-shadow bg-destructive/5 border-destructive/20">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-12 h-12 bg-destructive/10 rounded-2xl flex items-center justify-center">
-                    <Heart className="w-6 h-6 text-destructive" />
-                  </div>
-                  <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20">Lab</Badge>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+            <Card className="bc-card bg-tertiary/5 border-tertiary/20 p-6">
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 bg-tertiary/10 rounded-lg flex items-center justify-center">
+                  <Heart className="w-5 h-5 text-tertiary" />
                 </div>
-                <h3 className="text-2xl font-bold">{labOrders.length}</h3>
-                <p className="text-sm text-muted-foreground">Lab Results Ready</p>
-              </CardContent>
+                <Badge variant="outline" className="bg-tertiary/10 text-tertiary border-tertiary/30 text-xs">Lab</Badge>
+              </div>
+              <p className="bc-metric">{labOrders.length}</p>
+              <p className="bc-metric-label mt-1">Lab Results Ready</p>
             </Card>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
             <Card className="hover-lift card-shadow bg-accent/5 border-accent/20">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between mb-4">
@@ -1051,67 +1048,21 @@ const PatientDashboard = () => {
               animate={{ opacity: 1, y: 0 }}
               className="space-y-3"
             >
-              <div className="flex items-center justify-between">
-                <Label htmlFor="doctor" className="text-base font-semibold flex items-center gap-2">
-                  <User className="w-4 h-4 text-secondary" />
-                  Preferred Doctor (Optional)
-                </Label>
-                {!bookingForm.department_id && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-xs"
-                    onClick={() => fetchDoctors('')}
-                  >
-                    Show All Doctors
-                  </Button>
-                )}
+              <Label htmlFor="doctor" className="text-base font-semibold flex items-center gap-2">
+                <User className="w-4 h-4 text-secondary" />
+                Select Your Doctor (Optional)
+              </Label>
+              <div className="border-2 rounded-xl p-4 bg-muted/10">
+                <DoctorSelector
+                  departmentId={bookingForm.department_id}
+                  selectedDoctorId={bookingForm.doctor_id}
+                  onSelect={(doctor) => setBookingForm({ ...bookingForm, doctor_id: doctor.id })}
+                />
               </div>
-              {loadingDoctors ? (
-                <div className="p-4 border rounded-xl bg-muted/30 flex items-center justify-center">
-                  <p className="text-sm text-muted-foreground">Loading doctors...</p>
-                </div>
-              ) : bookingForm.department_id || doctors.length > 0 ? (
-                <Select
-                  value={bookingForm.doctor_id}
-                  onValueChange={(value) => setBookingForm({ ...bookingForm, doctor_id: value })}
-                >
-                  <SelectTrigger className="h-12 border-2 hover:border-secondary transition-colors">
-                    <SelectValue placeholder="Any available doctor" />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-[400px]">
-                    {doctors.length === 0 ? (
-                      <div className="p-3 text-sm text-muted-foreground">
-                        No doctors available in this department
-                      </div>
-                    ) : (
-                      doctors.map((doctor) => (
-                        <SelectItem key={doctor.id} value={doctor.id} className="py-3">
-                          <div className="flex flex-col">
-                            <span className="font-medium">
-                              Dr. {doctor.first_name} {doctor.last_name}
-                            </span>
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                              {doctor.specialization && (
-                                <span>{doctor.specialization}</span>
-                              )}
-                              {doctor.department?.name && (
-                                <>
-                                  <span>•</span>
-                                  <span>{doctor.department.name}</span>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                        </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <div className="p-4 border rounded-xl bg-muted/30">
-                  <p className="text-sm text-muted-foreground">Select a department first, or click "Show All Doctors"</p>
-                </div>
+              {bookingForm.doctor_id && (
+                <p className="text-xs text-muted-foreground">
+                  ✓ Doctor selected. You can change your selection by clicking another doctor above.
+                </p>
               )}
             </motion.div>
 

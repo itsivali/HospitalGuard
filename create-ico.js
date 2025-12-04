@@ -1,7 +1,3 @@
-/**
- * Simple ICO Generator
- * Converts PNG to ICO format for maximum browser compatibility
- */
 
 import sharp from 'sharp';
 import fs from 'fs';
@@ -21,10 +17,7 @@ async function createIco() {
     // Read the 32x32 PNG
     const pngBuffer = fs.readFileSync(PNG_SOURCE);
 
-    // For simplicity, we'll just copy the PNG as ICO
-    // Modern browsers support PNG in ICO containers
-    // A proper ICO would include multiple sizes, but this works for most cases
-
+    
     // Create a simple ICO header + PNG data
     const iconDir = Buffer.alloc(6);
     iconDir.writeUInt16LE(0, 0); // Reserved
