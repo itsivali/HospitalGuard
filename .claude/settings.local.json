@@ -18,7 +18,8 @@
       "Bash(powershell -Command \"(Get-Content hospital-seed.sql) -replace '', patient_care_type'', '''' -replace '', ''''both'''''', '''' -replace '', ''''outpatient'''''', '''' -replace '', ''''inpatient'''''', '''' | Set-Content hospital-seed-fixed.sql\")",
       "Bash(python fix-seed.py:*)",
       "Bash(copy:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []

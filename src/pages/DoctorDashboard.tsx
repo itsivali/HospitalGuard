@@ -34,8 +34,11 @@ import {
   FileSignature,
   Search,
   Filter,
-  X
+  X,
+  ArrowRight,
+  Plus
 } from "lucide-react";
+import { PrescriptionQRGenerator } from "@/components/prescription";
 
 const DoctorDashboard = () => {
   const navigate = useNavigate();
@@ -58,6 +61,10 @@ const DoctorDashboard = () => {
   const [showMyPatients, setShowMyPatients] = useState(false);
   const [showPatientDetails, setShowPatientDetails] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
+  const [showPrescriptionModal, setShowPrescriptionModal] = useState(false);
+  const [selectedPrescription, setSelectedPrescription] = useState<any>(null);
+  const [prescriptions, setPrescriptions] = useState<any[]>([]);
+  const [showPrescriptionList, setShowPrescriptionList] = useState(false);
 
   // Data states
   const [todayAppointments, setTodayAppointments] = useState<any[]>([]);
@@ -180,9 +187,107 @@ const DoctorDashboard = () => {
         pendingLabResults: 0 // TODO: Fetch from lab_orders
       });
 
+    // Fetch prescriptions for this doctor
+      const { data: prescriptionsData } = await supabase
+        .from('prescriptions')
+        .select(`
+          *,
+          patient:patients(id, first_name, last_name, date_of_birth),
+          prescription_items:prescription_items(*)
+        `)
+        .eq('doctor_id', doctor.id)
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      setPrescriptions(prescriptionsData || []);
+
     } catch (error) {
       console.error("Error fetching doctor data:", error);
     }
+  };
+
+  const handleSignPrescription = async (prescriptionId: string, digitalSignature: string) => {
+    try {
+      // Update prescription with signature
+      const { error } = await supabase
+        .from('prescriptions')
+        .update({
+          digital_signature: digitalSignature,
+          status: 'signed',
+          signed_at: new Date().toISOString()
+        })
+        .eq('id', prescriptionId);
+
+      if (error) throw error;
+
+      // Refresh prescriptions
+      if (doctorData) {
+        const { data: prescriptionsData } = await supabase
+          .from('prescriptions')
+          .select(`
+            *,
+            patient:patients(id, first_name, last_name, date_of_birth),
+            prescription_items:prescription_items(*)
+          `)
+          .eq('doctor_id', doctorData.id)
+          .order('created_at', { ascending: false })
+          .limit(50);
+
+        setPrescriptions(prescriptionsData || []);
+      }
+
+      toast({
+        title: 'Prescription Signed',
+        description: 'Digital signature applied and QR code generated'
+      });
+
+    } catch (error: any) {
+      console.error('Error signing prescription:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to sign prescription',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  const openPrescriptionQR = (prescription: any) => {
+    // Transform prescription data for the QR generator
+    const prescriptionData = {
+      prescription_id: prescription.id,
+      prescription_number: prescription.prescription_number,
+      patient_id: prescription.patient?.id || prescription.patient_id,
+      patient_name: prescription.patient
+        ? `${prescription.patient.first_name} ${prescription.patient.last_name}`
+        : 'Unknown Patient',
+      patient_age: prescription.patient?.date_of_birth
+        ? Math.floor((new Date().getTime() - new Date(prescription.patient.date_of_birth).getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+        : undefined,
+      doctor_id: doctorData?.id || '',
+      doctor_name: doctorData ? `${doctorData.first_name} ${doctorData.last_name}` : 'Doctor',
+      doctor_license: doctorData?.license_number || 'N/A',
+      visit_id: prescription.visit_id,
+      status: prescription.status,
+      notes: prescription.notes,
+      is_controlled_substance: prescription.is_controlled_substance,
+      refills_allowed: prescription.refills_allowed || 0,
+      valid_until: prescription.valid_until,
+      created_at: prescription.created_at,
+      items: prescription.prescription_items?.map((item: any) => ({
+        medication_name: item.medication_name,
+        dosage: item.dosage,
+        frequency: item.frequency,
+        duration: item.duration,
+        quantity: item.quantity,
+        instructions: item.instructions,
+        is_controlled_substance: item.is_controlled_substance
+      })) || [],
+      digital_signature: prescription.digital_signature,
+      signed_at: prescription.signed_at
+    };
+
+    setSelectedPrescription(prescriptionData);
+    setShowPrescriptionModal(true);
   };
 
   const handleLogout = async () => {
@@ -445,6 +550,92 @@ const DoctorDashboard = () => {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Prescriptions Card */}
+        <Card className="bc-card mt-4">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-accent/10 rounded-lg flex items-center justify-center">
+                  <QrCode className="w-4 h-4 text-accent" />
+                </div>
+                <div>
+                  <CardTitle className="text-base font-semibold">Digital Prescriptions</CardTitle>
+                  <CardDescription className="text-xs">Sign and generate QR codes for prescriptions</CardDescription>
+                </div>
+              </div>
+              <Button
+                className="btn-press bg-accent text-accent-foreground hover:bg-accent/90"
+                size="sm"
+                onClick={() => setShowPrescriptionList(true)}
+              >
+                View All
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {prescriptions.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <QrCode className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                <p className="text-sm">No prescriptions created yet</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {prescriptions.slice(0, 3).map((prescription) => (
+                  <div
+                    key={prescription.id}
+                    className="p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer flex items-center justify-between"
+                    onClick={() => openPrescriptionQR(prescription)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                        prescription.status === 'signed'
+                          ? 'bg-green-100'
+                          : 'bg-yellow-100'
+                      }`}>
+                        {prescription.status === 'signed' ? (
+                          <QrCode className="w-5 h-5 text-green-700" />
+                        ) : (
+                          <FileSignature className="w-5 h-5 text-yellow-700" />
+                        )}
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm">{prescription.prescription_number}</h4>
+                        <p className="text-xs text-muted-foreground">
+                          {prescription.patient
+                            ? `${prescription.patient.first_name} ${prescription.patient.last_name}`
+                            : 'Patient'}
+                          {' - '}
+                          {prescription.prescription_items?.length || 0} med(s)
+                        </p>
+                      </div>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className={`text-xs ${
+                        prescription.status === 'signed'
+                          ? 'bg-green-50 text-green-700 border-green-200'
+                          : prescription.status === 'dispensed'
+                          ? 'bg-blue-50 text-blue-700 border-blue-200'
+                          : 'bg-yellow-50 text-yellow-700 border-yellow-200'
+                      }`}
+                    >
+                      {prescription.status === 'signed' ? 'View QR' : 'Sign'}
+                    </Badge>
+                  </div>
+                ))}
+                {prescriptions.length > 3 && (
+                  <p
+                    className="text-xs text-center text-accent cursor-pointer hover:underline pt-2"
+                    onClick={() => setShowPrescriptionList(true)}
+                  >
+                    +{prescriptions.length - 3} more prescriptions
+                  </p>
+                )}
               </div>
             )}
           </CardContent>
@@ -802,6 +993,99 @@ const DoctorDashboard = () => {
                 </Button>
               </div>
             </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Prescriptions List Modal */}
+      <Dialog open={showPrescriptionList} onOpenChange={setShowPrescriptionList}>
+        <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+              <Pill className="w-6 h-6 text-primary" />
+              My Prescriptions
+            </DialogTitle>
+            <DialogDescription>
+              View and manage prescriptions you've created
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            {prescriptions.length === 0 ? (
+              <div className="text-center py-12">
+                <Pill className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-30" />
+                <p className="text-muted-foreground">No prescriptions created yet</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {prescriptions.map((prescription) => (
+                  <div
+                    key={prescription.id}
+                    className="p-4 rounded-xl bg-muted/30 border hover-lift cursor-pointer"
+                    onClick={() => openPrescriptionQR(prescription)}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start gap-4">
+                        <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                          {prescription.status === 'signed' ? (
+                            <QrCode className="w-6 h-6 text-primary" />
+                          ) : (
+                            <FileSignature className="w-6 h-6 text-yellow-600" />
+                          )}
+                        </div>
+                        <div>
+                          <h4 className="font-semibold">{prescription.prescription_number}</h4>
+                          <p className="text-sm text-muted-foreground">
+                            {prescription.patient
+                              ? `${prescription.patient.first_name} ${prescription.patient.last_name}`
+                              : 'Unknown Patient'}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant="outline" className="text-xs">
+                              {prescription.prescription_items?.length || 0} medication(s)
+                            </Badge>
+                            {prescription.is_controlled_substance && (
+                              <Badge variant="outline" className="text-xs text-yellow-600 border-yellow-600">
+                                Controlled
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <Badge
+                          variant="outline"
+                          className={`text-xs ${
+                            prescription.status === 'signed'
+                              ? 'bg-green-50 text-green-700 border-green-200'
+                              : prescription.status === 'dispensed'
+                              ? 'bg-blue-50 text-blue-700 border-blue-200'
+                              : 'bg-yellow-50 text-yellow-700 border-yellow-200'
+                          }`}
+                        >
+                          {prescription.status}
+                        </Badge>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          {new Date(prescription.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Prescription QR Generator Modal */}
+      <Dialog open={showPrescriptionModal} onOpenChange={setShowPrescriptionModal}>
+        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto p-0">
+          {selectedPrescription && (
+            <PrescriptionQRGenerator
+              prescription={selectedPrescription}
+              onSign={handleSignPrescription}
+              onClose={() => setShowPrescriptionModal(false)}
+            />
           )}
         </DialogContent>
       </Dialog>
