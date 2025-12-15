@@ -5,3 +5,4 @@
 
 export { PrescriptionQRGenerator } from './PrescriptionQRGenerator';
 export { PrescriptionQRScanner } from './PrescriptionQRScanner';
+export { CreatePrescriptionForm } from './CreatePrescriptionForm';

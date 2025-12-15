@@ -13,6 +13,7 @@ import PharmacistDashboard from "./pages/PharmacyDashboardEnhanced";
 import BillingDashboard from "./pages/BillingDashboard";
 import AdminDashboard from "./pages/AdminDashboardEnhanced";
 import VerifyPrescription from "./pages/VerifyPrescription";
+import PrescriptionManagement from "./pages/PrescriptionManagement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,8 @@ const App = () => (
           <Route path="/pharmacist-dashboard" element={<PharmacistDashboard />} />
           <Route path="/billing-dashboard" element={<BillingDashboard />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          {/* Prescription routes */}
+          <Route path="/prescriptions" element={<PrescriptionManagement />} />
           {/* Prescription verification routes - public access */}
           <Route path="/verify-prescription" element={<VerifyPrescription />} />
           <Route path="/verify-prescription/:prescriptionNumber" element={<VerifyPrescription />} />

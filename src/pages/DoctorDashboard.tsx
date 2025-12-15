@@ -568,13 +568,24 @@ const DoctorDashboard = () => {
                   <CardDescription className="text-xs">Sign and generate QR codes for prescriptions</CardDescription>
                 </div>
               </div>
-              <Button
-                className="btn-press bg-accent text-accent-foreground hover:bg-accent/90"
-                size="sm"
-                onClick={() => setShowPrescriptionList(true)}
-              >
-                View All
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate('/prescriptions?tab=create')}
+                  className="btn-press"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  New
+                </Button>
+                <Button
+                  className="btn-press bg-accent text-accent-foreground hover:bg-accent/90"
+                  size="sm"
+                  onClick={() => navigate('/prescriptions')}
+                >
+                  Manage All
+                </Button>
+              </div>
             </div>
           </CardHeader>
           <CardContent>
@@ -582,6 +593,14 @@ const DoctorDashboard = () => {
               <div className="text-center py-8 text-muted-foreground">
                 <QrCode className="w-10 h-10 mx-auto mb-2 opacity-30" />
                 <p className="text-sm">No prescriptions created yet</p>
+                <Button
+                  variant="link"
+                  size="sm"
+                  onClick={() => navigate('/prescriptions?tab=create')}
+                  className="mt-2"
+                >
+                  Create your first prescription
+                </Button>
               </div>
             ) : (
               <div className="space-y-3">
@@ -631,9 +650,9 @@ const DoctorDashboard = () => {
                 {prescriptions.length > 3 && (
                   <p
                     className="text-xs text-center text-accent cursor-pointer hover:underline pt-2"
-                    onClick={() => setShowPrescriptionList(true)}
+                    onClick={() => navigate('/prescriptions')}
                   >
-                    +{prescriptions.length - 3} more prescriptions
+                    +{prescriptions.length - 3} more prescriptions - View all
                   </p>
                 )}
               </div>
