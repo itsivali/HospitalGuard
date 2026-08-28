@@ -274,7 +274,6 @@ This is a private project, but contributions are welcome:
 
 ## Documentation
 
-- **[CLAUDE.md](CLAUDE.md)** - Comprehensive development guide
 - **[supabase-schema.sql](supabase-schema.sql)** - Complete database schema
 
 ## License
